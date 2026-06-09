@@ -1,0 +1,51 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-nomad-teal: #0f766e;
+  --color-nomad-teal-light: #14b8a6;
+  --color-nomad-dark: #0f172a;
+  --color-nomad-surface: #1e293b;
+  --color-nomad-muted: #94a3b8;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background-color: var(--color-nomad-dark);
+  color: #f8fafc;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  overscroll-behavior: none;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+input,
+select,
+textarea,
+button {
+  font-size: 16px;
+}

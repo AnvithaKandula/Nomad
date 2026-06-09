@@ -1,0 +1,7 @@
+.DS_Store
+.cursor/
+nomad/node_modules
+nomad/dist
+nomad/.env
+nomad/.env.*
+!nomad/.env.example
