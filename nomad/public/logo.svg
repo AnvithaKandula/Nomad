@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 230" fill="none" role="img" aria-label="Nomad">
+  <!-- Pin outline -->
+  <path
+    d="M100 18 C62 18 32 48 32 88 C32 124 72 178 92 210 C96 216 104 216 108 210 C128 178 168 124 168 88 C168 48 138 18 100 18 Z"
+    stroke="#0a0a0a"
+    stroke-width="14"
+    stroke-linejoin="round"
+    fill="none"
+  />
+  <!-- N / winding path inside pin -->
+  <path
+    d="M68 72 V168 M68 72 L132 72 L132 118 M132 118 L68 168"
+    stroke="#0a0a0a"
+    stroke-width="12"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+  <path
+    d="M82 132 C96 122 110 122 124 132"
+    stroke="#0a0a0a"
+    stroke-width="9"
+    stroke-linecap="round"
+    fill="none"
+  />
+</svg>

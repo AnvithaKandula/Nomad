@@ -1,14 +1,19 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Calendar } from 'lucide-react'
-import { format } from 'date-fns'
+import { ArrowLeft, Pencil, Package, CalendarDays } from 'lucide-react'
+import { differenceInDays, format, parseISO } from 'date-fns'
 import { useTrips } from '../contexts/TripContext'
 import { WeatherCard } from '../components/trips/WeatherCard'
+import { TripPackingTab } from '../components/trips/TripPackingTab'
+import { TripItineraryTab } from '../components/trips/TripItineraryTab'
+import { TripForm } from '../components/trips/TripForm'
 
 export function TripDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { trips, setActiveTripId, activeTrip } = useTrips()
+  const { trips, setActiveTripId, activeTrip, bannerTheme, updateTrip } = useTrips()
+  const [tab, setTab] = useState<'packing' | 'itinerary'>('packing')
+  const [editing, setEditing] = useState(false)
 
   const trip = trips.find((t) => t.id === id) ?? activeTrip
 
@@ -17,55 +22,70 @@ export function TripDetail() {
   }, [id, setActiveTripId])
 
   if (!trip) {
-    return (
-      <div className="px-4 pt-6 text-center text-nomad-muted">
-        Trip not found
-      </div>
-    )
+    return <div className="px-4 pt-8 text-center text-gray-500">Trip not found</div>
   }
 
-  return (
-    <div className="px-4 pt-4">
-      <button
-        onClick={() => navigate('/trips')}
-        className="mb-4 flex items-center gap-1 text-sm text-nomad-muted hover:text-white"
-      >
-        <ArrowLeft size={16} /> Back to trips
-      </button>
+  const days = differenceInDays(parseISO(trip.end_date), parseISO(trip.start_date)) + 1
 
-      <div className="relative mb-6 overflow-hidden rounded-2xl">
-        <img
-          src={trip.image_url ?? `https://source.unsplash.com/featured/800x400/?${trip.destination_name}`}
-          alt={trip.destination_name}
-          className="h-48 w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-        <div className="absolute bottom-4 left-4">
-          <h1 className="text-2xl font-bold">{trip.destination_name}</h1>
-          <p className="flex items-center gap-1 text-sm text-slate-300">
-            <Calendar size={14} />
-            {format(new Date(trip.start_date), 'MMM d')} – {format(new Date(trip.end_date), 'MMM d, yyyy')}
-          </p>
-        </div>
+  return (
+    <div className="mx-auto max-w-lg px-4 pt-6">
+      <div className="mb-4 flex items-center justify-between">
+        <button
+          onClick={() => navigate('/trips')}
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600"
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <button
+          onClick={() => setEditing(!editing)}
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600"
+        >
+          <Pencil size={16} />
+        </button>
       </div>
+
+      <h1 className="font-serif text-3xl font-bold text-black">{trip.destination_name}</h1>
+      <p className="mb-5 text-sm text-gray-500">
+        {format(parseISO(trip.start_date), 'MMM d')} – {format(parseISO(trip.end_date), 'MMM d, yyyy')} · {days} days
+      </p>
+
+      {editing && (
+        <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <TripForm
+            initial={trip}
+            bannerTheme={bannerTheme}
+            onSubmit={async (data) => {
+              await updateTrip(trip.id, data)
+              setEditing(false)
+            }}
+            onCancel={() => setEditing(false)}
+          />
+        </div>
+      )}
 
       <WeatherCard trip={trip} />
 
-      <div className="mt-6 grid grid-cols-2 gap-3">
+      <div className="mt-6 flex rounded-2xl bg-gray-100 p-1">
         <button
-          onClick={() => navigate('/packing')}
-          className="rounded-2xl bg-nomad-surface p-4 text-left hover:bg-slate-700"
+          onClick={() => setTab('packing')}
+          className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-colors ${
+            tab === 'packing' ? 'bg-white text-black shadow-sm' : 'text-gray-500'
+          }`}
         >
-          <p className="font-semibold">Packing List</p>
-          <p className="text-xs text-nomad-muted">View & manage items</p>
+          <Package size={16} /> Packing
         </button>
         <button
-          onClick={() => navigate('/itinerary')}
-          className="rounded-2xl bg-nomad-surface p-4 text-left hover:bg-slate-700"
+          onClick={() => setTab('itinerary')}
+          className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-colors ${
+            tab === 'itinerary' ? 'bg-white text-black shadow-sm' : 'text-gray-500'
+          }`}
         >
-          <p className="font-semibold">Itinerary</p>
-          <p className="text-xs text-nomad-muted">Plan activities</p>
+          <CalendarDays size={16} /> Itinerary
         </button>
+      </div>
+
+      <div className="mt-4">
+        {tab === 'packing' ? <TripPackingTab tripId={trip.id} /> : <TripItineraryTab tripId={trip.id} />}
       </div>
     </div>
   )

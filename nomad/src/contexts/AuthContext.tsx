@@ -7,6 +7,7 @@ import {
 } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
+import { seedGuestData } from '../lib/seedGuestData'
 
 interface AuthContextValue {
   user: User | null
@@ -14,9 +15,11 @@ interface AuthContextValue {
   loading: boolean
   signUp: (email: string, password: string) => Promise<{ error: string | null }>
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
+  signInAsGuest: () => void
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<{ error: string | null }>
   isDemo: boolean
+  isGuest: boolean
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -26,16 +29,28 @@ const DEMO_USER = {
   email: 'demo@nomad.app',
 } as User
 
+const GUEST_USER = {
+  id: 'guest-user-id',
+  email: 'guest@nomad.app',
+} as User
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isGuest, setIsGuest] = useState(false)
   const isDemo = !isSupabaseConfigured
 
   useEffect(() => {
     if (!supabase) {
+      const guestSession = localStorage.getItem('nomad-guest-session')
       const demoSession = localStorage.getItem('nomad-demo-session')
-      if (demoSession) setUser(DEMO_USER)
+      if (guestSession) {
+        setUser(GUEST_USER)
+        setIsGuest(true)
+      } else if (demoSession) {
+        setUser(DEMO_USER)
+      }
       setLoading(false)
       return
     }
@@ -80,13 +95,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null }
   }
 
+  const signInAsGuest = () => {
+    seedGuestData()
+    localStorage.setItem('nomad-guest-session', '1')
+    localStorage.removeItem('nomad-demo-session')
+    setUser(GUEST_USER)
+    setIsGuest(true)
+  }
+
   const signOut = async () => {
     if (!supabase) {
       localStorage.removeItem('nomad-demo-session')
+      localStorage.removeItem('nomad-guest-session')
       setUser(null)
+      setIsGuest(false)
       return
     }
     await supabase.auth.signOut()
+    setIsGuest(false)
   }
 
   const resetPassword = async (email: string) => {
@@ -99,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, loading, signUp, signIn, signOut, resetPassword, isDemo }}
+      value={{ user, session, loading, signUp, signIn, signInAsGuest, signOut, resetPassword, isDemo, isGuest }}
     >
       {children}
     </AuthContext.Provider>

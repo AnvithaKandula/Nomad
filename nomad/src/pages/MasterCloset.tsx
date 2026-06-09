@@ -1,99 +1,111 @@
 import { useState } from 'react'
-import { Plus, Pencil, Trash2, Shirt } from 'lucide-react'
+import { Plus, Trash2, Search } from 'lucide-react'
 import { useTrips } from '../contexts/TripContext'
-import { Input } from '../components/ui/Input'
-import { Button } from '../components/ui/Button'
+import { PageHeader } from '../components/ui/PageHeader'
 import type { ItemCategory } from '../types'
 
 const CATEGORIES: ItemCategory[] = ['clothing', 'tech', 'toiletry', 'accessory', 'footwear', 'other']
 
+const categoryEmoji: Record<string, string> = {
+  clothing: '👕',
+  footwear: '👟',
+  tech: '💻',
+  toiletry: '🧴',
+  accessory: '👜',
+  other: '📦',
+}
+
 export function MasterCloset() {
-  const { closet, addClosetItem, updateClosetItem, deleteClosetItem } = useTrips()
+  const { closet, addClosetItem, deleteClosetItem } = useTrips()
+  const [search, setSearch] = useState('')
+  const [showAdd, setShowAdd] = useState(false)
   const [name, setName] = useState('')
   const [category, setCategory] = useState<ItemCategory>('clothing')
-  const [editingId, setEditingId] = useState<string | null>(null)
 
-  const handleSubmit = async () => {
-    if (!name.trim()) return
-    if (editingId) {
-      await updateClosetItem(editingId, name.trim(), category)
-      setEditingId(null)
-    } else {
-      await addClosetItem(name.trim(), category)
-    }
-    setName('')
-    setCategory('clothing')
-  }
+  const filtered = closet.filter((i) =>
+    i.item_name.toLowerCase().includes(search.toLowerCase()),
+  )
 
-  const startEdit = (id: string, itemName: string, cat: string) => {
-    setEditingId(id)
-    setName(itemName)
-    setCategory(cat as ItemCategory)
-  }
-
-  const grouped = CATEGORIES.reduce<Record<string, typeof closet>>((acc, cat) => {
-    const items = closet.filter((i) => i.category === cat)
+  const grouped = CATEGORIES.reduce<Record<string, typeof filtered>>((acc, cat) => {
+    const items = filtered.filter((i) => i.category === cat)
     if (items.length) acc[cat] = items
     return acc
   }, {})
 
+  const handleAdd = async () => {
+    if (!name.trim()) return
+    await addClosetItem(name.trim(), category)
+    setName('')
+    setShowAdd(false)
+  }
+
   return (
-    <div className="px-4 pt-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Master Closet</h1>
-        <p className="text-sm text-nomad-muted">Your permanent packing inventory</p>
+    <div className="mx-auto max-w-lg px-4 pt-8">
+      <PageHeader
+        title="Closet"
+        subtitle={`${closet.length} items in your inventory`}
+        action={
+          <button
+            onClick={() => setShowAdd(!showAdd)}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow-lg"
+          >
+            <Plus size={22} />
+          </button>
+        }
+      />
+
+      <div className="relative mb-6">
+        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <input
+          type="search"
+          placeholder="Search items..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-2xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-black"
+        />
       </div>
 
-      <div className="mb-6 space-y-3 rounded-2xl border border-slate-700 bg-nomad-surface p-4">
-        <Input
-          placeholder="Item name (e.g. Hiking boots)"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value as ItemCategory)}
-          className="w-full rounded-xl border border-slate-600 bg-nomad-dark px-4 py-3 text-white"
-        >
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        <Button onClick={handleSubmit} className="w-full">
-          <Plus size={16} className="mr-1 inline" />
-          {editingId ? 'Update Item' : 'Add Item'}
-        </Button>
-        {editingId && (
-          <Button variant="ghost" onClick={() => { setEditingId(null); setName('') }} className="w-full">
-            Cancel edit
-          </Button>
-        )}
-      </div>
+      {showAdd && (
+        <div className="mb-6 space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <input
+            placeholder="Item name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-black"
+          />
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value as ItemCategory)}
+            className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm"
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <button onClick={handleAdd} className="w-full rounded-full bg-black py-2.5 text-sm font-medium text-white">
+            Add Item
+          </button>
+        </div>
+      )}
 
       {closet.length === 0 ? (
-        <div className="py-12 text-center">
-          <Shirt className="mx-auto mb-3 text-nomad-muted" size={40} />
-          <p className="text-nomad-muted">Add items you always travel with</p>
-        </div>
+        <p className="py-12 text-center text-gray-500">Add items you always travel with</p>
       ) : (
         Object.entries(grouped).map(([cat, items]) => (
           <div key={cat} className="mb-6">
-            <h3 className="mb-2 text-sm font-semibold capitalize text-nomad-teal-light">{cat}</h3>
+            <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+              {categoryEmoji[cat]} {cat} ({items.length})
+            </h3>
             <div className="space-y-2">
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between rounded-xl border border-slate-700 bg-nomad-surface px-4 py-3"
+                  className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-3.5 shadow-sm"
                 >
-                  <span className="text-sm">{item.item_name}</span>
-                  <div className="flex gap-2">
-                    <button onClick={() => startEdit(item.id, item.item_name, item.category)} className="text-nomad-muted hover:text-white">
-                      <Pencil size={16} />
-                    </button>
-                    <button onClick={() => deleteClosetItem(item.id)} className="text-nomad-muted hover:text-red-400">
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+                  <span className="text-sm font-medium text-black">{item.item_name}</span>
+                  <button onClick={() => deleteClosetItem(item.id)} className="text-gray-400 hover:text-black">
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               ))}
             </div>

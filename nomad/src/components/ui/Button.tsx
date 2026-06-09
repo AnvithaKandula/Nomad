@@ -1,15 +1,16 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline'
   children: ReactNode
 }
 
 const variants = {
-  primary: 'bg-nomad-teal hover:bg-teal-600 text-white',
-  secondary: 'bg-nomad-surface hover:bg-slate-600 text-white border border-slate-600',
-  ghost: 'bg-transparent hover:bg-slate-800 text-slate-300',
-  danger: 'bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/30',
+  primary: 'bg-black text-white hover:bg-gray-800',
+  secondary: 'bg-white text-black border border-gray-200 hover:bg-gray-50',
+  outline: 'bg-transparent text-black border border-gray-300 hover:bg-gray-50',
+  ghost: 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-black',
+  danger: 'bg-white text-red-600 border border-red-200 hover:bg-red-50',
 }
 
 export function Button({
@@ -20,7 +21,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 ${variants[variant]} ${className}`}
+      className={`rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 ${variants[variant]} ${className}`}
       {...props}
     >
       {children}

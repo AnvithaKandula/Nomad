@@ -1,14 +1,18 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, MapPin, Calendar, Pencil, Trash2 } from 'lucide-react'
-import { format } from 'date-fns'
+import { Plus, Calendar, MapPin, ChevronRight } from 'lucide-react'
+import { differenceInDays, format, isPast, parseISO } from 'date-fns'
 import { useTrips } from '../contexts/TripContext'
 import { TripForm } from '../components/trips/TripForm'
-import { Button } from '../components/ui/Button'
+import { PageHeader } from '../components/ui/PageHeader'
 import { fetchLocationImage } from '../lib/geocoding'
 
+function tripStatus(endDate: string) {
+  return isPast(parseISO(endDate)) ? 'Completed' : 'Planning'
+}
+
 export function Trips() {
-  const { trips, bannerTheme, createTrip, updateTrip, deleteTrip, setActiveTripId } = useTrips()
+  const { trips, bannerTheme, createTrip, updateTrip, setActiveTripId } = useTrips()
   const navigate = useNavigate()
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -21,20 +25,23 @@ export function Trips() {
   }
 
   return (
-    <div className="px-4 pt-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">My Trips</h1>
-          <p className="text-sm text-nomad-muted">Plan your next adventure</p>
-        </div>
-        <Button onClick={() => { setShowForm(true); setEditingId(null) }}>
-          <Plus size={18} className="mr-1 inline" /> New
-        </Button>
-      </div>
+    <div className="mx-auto max-w-lg px-4 pt-8">
+      <PageHeader
+        title="Nomad"
+        subtitle="Your travel companion"
+        action={
+          <button
+            onClick={() => { setShowForm(true); setEditingId(null) }}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow-lg transition-transform hover:scale-105"
+          >
+            <Plus size={22} />
+          </button>
+        }
+      />
 
       {(showForm || editingId) && (
-        <div className="mb-6 rounded-2xl border border-slate-700 bg-nomad-surface p-4">
-          <h2 className="mb-4 font-semibold">{editingId ? 'Edit Trip' : 'New Trip'}</h2>
+        <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <h2 className="mb-4 font-serif text-lg font-semibold">{editingId ? 'Edit Trip' : 'New Trip'}</h2>
           <TripForm
             initial={editingTrip}
             bannerTheme={bannerTheme}
@@ -54,54 +61,62 @@ export function Trips() {
       )}
 
       {trips.length === 0 && !showForm ? (
-        <div className="rounded-2xl border border-dashed border-slate-600 p-12 text-center">
-          <MapPin className="mx-auto mb-3 text-nomad-muted" size={40} />
-          <p className="text-nomad-muted">No trips yet. Create your first one!</p>
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
+          <MapPin className="mx-auto mb-3 text-gray-400" size={40} />
+          <p className="text-gray-500">No trips yet. Tap + to create one!</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {trips.map((trip) => (
-            <div
-              key={trip.id}
-              className="overflow-hidden rounded-2xl border border-slate-700 bg-nomad-surface"
-            >
-              <button onClick={() => openTrip(trip.id)} className="w-full text-left">
-                <div className="relative h-36">
-                  <img
-                    src={trip.image_url ?? `https://source.unsplash.com/featured/800x400/?${trip.destination_name},travel`}
-                    alt={trip.destination_name}
-                    className="h-full w-full object-cover"
-                    onError={async (e) => {
-                      const img = await fetchLocationImage(trip.destination_name, bannerTheme, trip.country_code ?? undefined)
-                      ;(e.target as HTMLImageElement).src = img
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                  <div className="absolute bottom-3 left-4">
-                    <h3 className="text-lg font-bold">{trip.destination_name}</h3>
-                    <p className="flex items-center gap-1 text-xs text-slate-300">
-                      <Calendar size={12} />
-                      {format(new Date(trip.start_date), 'MMM d')} – {format(new Date(trip.end_date), 'MMM d, yyyy')}
-                    </p>
+        <div className="space-y-5">
+          {trips.map((trip) => {
+            const days = differenceInDays(parseISO(trip.end_date), parseISO(trip.start_date)) + 1
+            const status = tripStatus(trip.end_date)
+            return (
+              <div
+                key={trip.id}
+                className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200"
+              >
+                <button onClick={() => openTrip(trip.id)} className="w-full text-left">
+                  <div className="relative h-44">
+                    <img
+                      src={trip.image_url ?? `https://source.unsplash.com/featured/800x400/?${trip.destination_name},travel`}
+                      alt={trip.destination_name}
+                      className="h-full w-full object-cover grayscale-[20%]"
+                      onError={async (e) => {
+                        const img = await fetchLocationImage(trip.destination_name, bannerTheme, trip.country_code ?? undefined)
+                        ;(e.target as HTMLImageElement).src = img
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    <span
+                      className={`absolute right-3 top-3 rounded-full px-3 py-1 text-xs font-medium ${
+                        status === 'Planning'
+                          ? 'bg-white/90 text-black'
+                          : 'bg-black/70 text-white'
+                      }`}
+                    >
+                      {status}
+                    </span>
+                    <h3 className="absolute bottom-4 left-4 font-serif text-2xl font-bold text-white">
+                      {trip.destination_name}
+                    </h3>
                   </div>
-                </div>
-              </button>
-              <div className="flex gap-2 border-t border-slate-700 p-3">
-                <button
-                  onClick={() => { setEditingId(trip.id); setShowForm(false) }}
-                  className="flex flex-1 items-center justify-center gap-1 rounded-lg py-2 text-sm text-nomad-muted hover:bg-slate-700"
-                >
-                  <Pencil size={14} /> Edit
-                </button>
-                <button
-                  onClick={() => { if (confirm('Delete this trip?')) deleteTrip(trip.id) }}
-                  className="flex flex-1 items-center justify-center gap-1 rounded-lg py-2 text-sm text-red-400 hover:bg-red-500/10"
-                >
-                  <Trash2 size={14} /> Delete
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Calendar size={14} />
+                        {format(parseISO(trip.start_date), 'MMM d')} – {format(parseISO(trip.end_date), 'MMM d')}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin size={14} />
+                        {days} days
+                      </span>
+                    </div>
+                    <ChevronRight size={18} className="text-gray-400" />
+                  </div>
                 </button>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

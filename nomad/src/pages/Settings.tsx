@@ -1,19 +1,20 @@
-import { Flag, Landmark, Flower2, LogOut, Database } from 'lucide-react'
+import { LogOut, Database, Check, Palette } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTrips } from '../contexts/TripContext'
 import { Button } from '../components/ui/Button'
+import { PageHeader } from '../components/ui/PageHeader'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { BannerTheme } from '../types'
 
-const themes: { id: BannerTheme; label: string; icon: typeof Flag; description: string }[] = [
-  { id: 'landmark', label: 'Landmark', icon: Landmark, description: 'Famous sites & cityscapes' },
-  { id: 'flag', label: 'Country Flag', icon: Flag, description: 'National flag of destination' },
-  { id: 'national_flower', label: 'National Flower', icon: Flower2, description: 'Floral symbol of the country' },
+const themes: { id: BannerTheme; label: string; emoji: string; description: string }[] = [
+  { id: 'landmark', label: 'Famous Landmark', emoji: '🏛️', description: 'Iconic buildings & monuments' },
+  { id: 'flag', label: 'Country Flag', emoji: '🏳️', description: 'National flag of destination' },
+  { id: 'national_flower', label: 'National Flower', emoji: '🌸', description: 'Floral symbol of the country' },
 ]
 
 export function Settings() {
-  const { signOut, isDemo, user } = useAuth()
+  const { signOut, isGuest, user } = useAuth()
   const { bannerTheme, setBannerTheme } = useTrips()
   const navigate = useNavigate()
 
@@ -23,62 +24,59 @@ export function Settings() {
   }
 
   return (
-    <div className="px-4 pt-6">
-      <h1 className="mb-2 text-2xl font-bold">Settings</h1>
-      {user && <p className="mb-6 text-sm text-nomad-muted">{user.email}</p>}
+    <div className="mx-auto max-w-lg px-4 pt-8">
+      <PageHeader title="Settings" subtitle="Customize your Nomad experience" />
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-nomad-muted">
-          Banner Theme
-        </h2>
-        <p className="mb-4 text-sm text-nomad-muted">
-          Choose how trip banners display destination imagery
+        <div className="mb-4 flex items-center gap-2">
+          <Palette size={18} className="text-gray-600" />
+          <h2 className="font-semibold text-black">Trip Banner Style</h2>
+        </div>
+        <p className="mb-4 text-sm text-gray-500">
+          Choose what style of image is used for trip banners.
         </p>
-        <div className="space-y-2">
-          {themes.map(({ id, label, icon: Icon, description }) => (
+        <div className="grid grid-cols-2 gap-3">
+          {themes.map(({ id, label, emoji, description }) => (
             <button
               key={id}
               onClick={() => setBannerTheme(id)}
-              className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition-colors ${
+              className={`relative rounded-2xl border p-4 text-left transition-colors ${
                 bannerTheme === id
-                  ? 'border-nomad-teal-light bg-nomad-teal/20'
-                  : 'border-slate-700 bg-nomad-surface hover:border-slate-600'
+                  ? 'border-black bg-gray-50 ring-1 ring-black'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
               }`}
             >
-              <Icon size={22} className="text-nomad-teal-light" />
-              <div>
-                <p className="font-medium">{label}</p>
-                <p className="text-xs text-nomad-muted">{description}</p>
-              </div>
+              {bannerTheme === id && (
+                <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-black text-white">
+                  <Check size={12} />
+                </span>
+              )}
+              <span className="text-2xl">{emoji}</span>
+              <p className="mt-2 text-sm font-semibold text-black">{label}</p>
+              <p className="mt-0.5 text-xs text-gray-500">{description}</p>
             </button>
           ))}
         </div>
       </section>
 
-      <section className="mb-8 rounded-2xl border border-slate-700 bg-nomad-surface p-4">
+      <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
         <div className="flex items-start gap-3">
-          <Database className="mt-0.5 shrink-0 text-nomad-teal-light" size={20} />
+          <Database className="mt-0.5 shrink-0 text-gray-600" size={20} />
           <div>
-            <p className="font-medium">Supabase Connection</p>
-            <p className="mt-1 text-sm text-nomad-muted">
-              {isSupabaseConfigured
-                ? 'Connected — your data syncs to the cloud'
-                : isDemo
-                  ? 'Demo mode — data stored locally in this browser'
-                  : 'Not configured'}
+            <p className="font-medium text-black">Supabase Connection</p>
+            <p className="mt-1 text-sm text-gray-500">
+              {isGuest
+                ? 'Guest mode — sample data stored locally'
+                : isSupabaseConfigured
+                  ? 'Connected — your data syncs to the cloud'
+                  : 'Not configured — using local storage'}
             </p>
-            {!isSupabaseConfigured && (
-              <p className="mt-2 text-xs text-nomad-muted">
-                Add <code className="text-nomad-teal-light">VITE_SUPABASE_URL</code> and{' '}
-                <code className="text-nomad-teal-light">VITE_SUPABASE_ANON_KEY</code> to a{' '}
-                <code className="text-nomad-teal-light">.env</code> file, then restart the dev server.
-              </p>
-            )}
+            {user && <p className="mt-1 text-xs text-gray-400">{user.email}</p>}
           </div>
         </div>
       </section>
 
-      <Button variant="danger" onClick={handleSignOut} className="w-full">
+      <Button variant="outline" onClick={handleSignOut} className="w-full">
         <LogOut size={16} className="mr-2 inline" /> Sign Out
       </Button>
     </div>

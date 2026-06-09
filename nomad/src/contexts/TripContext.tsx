@@ -52,7 +52,8 @@ function saveDemoData(data: Record<string, unknown>) {
 }
 
 export function TripProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
+  const { user, isGuest } = useAuth()
+  const useLocal = isGuest || !isSupabaseConfigured
   const [trips, setTrips] = useState<Trip[]>([])
   const [activeTripId, setActiveTripId] = useState<string | null>(null)
   const [tripItems, setTripItems] = useState<TripItem[]>([])
@@ -66,7 +67,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   const refreshTrips = useCallback(async () => {
     if (!user) return
 
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const data = loadDemoData()
       setTrips(data.trips ?? [])
       setCloset(data.closet ?? [])
@@ -97,7 +98,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
       setTripItems(itemsRes.data ?? [])
       setItinerary(itinRes.data ?? [])
     }
-  }, [user, activeTripId])
+  }, [user, activeTripId, useLocal])
 
   useEffect(() => {
     if (!user) {
@@ -127,7 +128,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
       updated_at: new Date().toISOString(),
     }
 
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.trips = [...(demo.trips ?? []), trip]
       saveDemoData(demo)
@@ -143,7 +144,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   }
 
   const updateTrip = async (id: string, data: Partial<Trip>) => {
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.trips = (demo.trips ?? []).map((t: Trip) =>
         t.id === id ? { ...t, ...data, updated_at: new Date().toISOString() } : t,
@@ -158,7 +159,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   }
 
   const deleteTrip = async (id: string) => {
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.trips = (demo.trips ?? []).filter((t: Trip) => t.id !== id)
       saveDemoData(demo)
@@ -182,7 +183,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
       created_at: new Date().toISOString(),
     }
 
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.closet = [...(demo.closet ?? []), item]
       saveDemoData(demo)
@@ -194,7 +195,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   }
 
   const updateClosetItem = async (id: string, name: string, category: string) => {
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.closet = (demo.closet ?? []).map((i: MasterClosetItem) =>
         i.id === id ? { ...i, item_name: name, category } : i,
@@ -208,7 +209,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   }
 
   const deleteClosetItem = async (id: string) => {
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.closet = (demo.closet ?? []).filter((i: MasterClosetItem) => i.id !== id)
       saveDemoData(demo)
@@ -231,7 +232,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
       created_at: new Date().toISOString(),
     }))
 
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.tripItems = [...(demo.tripItems ?? []), ...newItems]
       saveDemoData(demo)
@@ -243,7 +244,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   }
 
   const togglePacked = async (itemId: string, packed: boolean) => {
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.tripItems = (demo.tripItems ?? []).map((i: TripItem) =>
         i.id === itemId ? { ...i, is_packed: packed } : i,
@@ -267,7 +268,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
       created_at: new Date().toISOString(),
     }
 
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.tripItems = [...(demo.tripItems ?? []), item]
       saveDemoData(demo)
@@ -279,7 +280,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   }
 
   const deleteTripItem = async (itemId: string) => {
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.tripItems = (demo.tripItems ?? []).filter((i: TripItem) => i.id !== itemId)
       saveDemoData(demo)
@@ -297,7 +298,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
       created_at: new Date().toISOString(),
     }
 
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.itinerary = [...(demo.itinerary ?? []), full]
       const cat = entry.category
@@ -333,7 +334,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   }
 
   const deleteItineraryEntry = async (id: string) => {
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.itinerary = (demo.itinerary ?? []).filter((i: ItineraryEntry) => i.id !== id)
       saveDemoData(demo)
@@ -348,7 +349,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
     setBannerThemeState(theme)
     if (!user) return
 
-    if (!isSupabaseConfigured) {
+    if (useLocal) {
       const demo = loadDemoData()
       demo.bannerTheme = theme
       saveDemoData(demo)

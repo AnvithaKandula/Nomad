@@ -19,13 +19,13 @@ export function ForgotPassword() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-nomad-dark px-6 safe-top safe-bottom">
-      <h1 className="mb-2 text-2xl font-bold">Reset Password</h1>
-      <p className="mb-8 text-center text-sm text-nomad-muted">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-[#f4f4f5] px-6 safe-top safe-bottom">
+      <h1 className="mb-2 font-serif text-2xl font-bold">Reset Password</h1>
+      <p className="mb-8 text-center text-sm text-gray-500">
         Enter your email and we'll send a reset link
       </p>
       {sent ? (
-        <p className="text-center text-nomad-teal-light">Check your email for the reset link.</p>
+        <p className="text-center text-black">Check your email for the reset link.</p>
       ) : (
         <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
           <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -34,7 +34,7 @@ export function ForgotPassword() {
           </Button>
         </form>
       )}
-      <Link to="/login" className="mt-6 text-sm text-nomad-teal-light hover:underline">
+      <Link to="/login" className="mt-6 text-sm text-gray-600 hover:text-black hover:underline">
         Back to login
       </Link>
     </div>

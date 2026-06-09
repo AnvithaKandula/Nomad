@@ -7,9 +7,9 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export function Input({ label, className = '', ...props }: InputProps) {
   return (
     <label className="block">
-      {label && <span className="mb-1.5 block text-sm text-nomad-muted">{label}</span>}
+      {label && <span className="mb-1.5 block text-sm text-gray-500">{label}</span>}
       <input
-        className={`w-full rounded-xl border border-slate-600 bg-nomad-surface px-4 py-3 text-white placeholder-slate-500 outline-none focus:border-nomad-teal-light ${className}`}
+        className={`w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-black placeholder-gray-400 outline-none focus:border-black ${className}`}
         {...props}
       />
     </label>

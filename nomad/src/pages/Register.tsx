@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
+import { Logo } from '../components/ui/Logo'
 
 export function Register() {
   const { signUp } = useAuth()
@@ -23,19 +24,22 @@ export function Register() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-nomad-dark px-6 safe-top safe-bottom">
-      <h1 className="mb-8 text-2xl font-bold">Create Account</h1>
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-[#f4f4f5] px-6 safe-top safe-bottom">
+      <div className="mb-8">
+        <Logo size="md" showTagline={false} />
+      </div>
+      <h1 className="mb-8 font-serif text-2xl font-bold">Create Account</h1>
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
-        {error && <p className="text-center text-sm text-red-400">{error}</p>}
+        {error && <p className="text-center text-sm text-red-600">{error}</p>}
         <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <Input label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
         <Button type="submit" disabled={loading} className="w-full">
           {loading ? 'Creating...' : 'Register'}
         </Button>
       </form>
-      <p className="mt-6 text-sm text-nomad-muted">
+      <p className="mt-6 text-sm text-gray-500">
         Already have an account?{' '}
-        <Link to="/login" className="text-nomad-teal-light hover:underline">Sign in</Link>
+        <Link to="/login" className="font-medium text-black hover:underline">Sign in</Link>
       </p>
     </div>
   )

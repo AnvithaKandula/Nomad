@@ -15,8 +15,8 @@ export default defineConfig({
         short_name: 'Nomad',
         description:
           'An intelligent travel companion that bridges the gap between your itinerary and your suitcase.',
-        theme_color: '#0f766e',
-        background_color: '#0f172a',
+        theme_color: '#0a0a0a',
+        background_color: '#f4f4f5',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',

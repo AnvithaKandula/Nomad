@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Cloud, Sun, CloudRain, Snowflake, Thermometer, Loader2, AlertCircle } from 'lucide-react'
+import { Cloud, Sun, CloudRain, Snowflake, CloudSun, Loader2, Lightbulb } from 'lucide-react'
 import { fetchWeather, getWeatherSuggestions } from '../../lib/weather'
 import type { Trip, WeatherDay } from '../../types'
 
@@ -8,10 +8,10 @@ interface WeatherCardProps {
 }
 
 function WeatherIcon({ code }: { code: number }) {
-  if ([71, 73, 75].includes(code)) return <Snowflake className="text-blue-300" size={20} />
-  if ([61, 63, 65, 80, 81, 82, 95].includes(code)) return <CloudRain className="text-blue-400" size={20} />
-  if (code <= 2) return <Sun className="text-amber-400" size={20} />
-  return <Cloud className="text-slate-400" size={20} />
+  if ([71, 73, 75].includes(code)) return <Snowflake className="text-gray-600" size={20} />
+  if ([61, 63, 65, 80, 81, 82, 95].includes(code)) return <CloudRain className="text-gray-600" size={20} />
+  if (code <= 2) return <Sun className="text-gray-700" size={20} />
+  return <CloudSun className="text-gray-500" size={20} />
 }
 
 export function WeatherCard({ trip }: WeatherCardProps) {
@@ -24,7 +24,7 @@ export function WeatherCard({ trip }: WeatherCardProps) {
     const lat = trip.lat_long?.lat
     const lng = trip.lat_long?.lng
     if (!lat || !lng) {
-      setError('Location coordinates missing — edit trip to set destination')
+      setError('Location coordinates missing')
       setLoading(false)
       return
     }
@@ -37,66 +37,66 @@ export function WeatherCard({ trip }: WeatherCardProps) {
         setDays(forecast)
         setSuggestions(getWeatherSuggestions(forecast))
       })
-      .catch(() => setError('Could not load forecast. Check your connection and try again.'))
+      .catch(() => setError('Could not load forecast'))
       .finally(() => setLoading(false))
   }, [trip])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center gap-2 rounded-2xl bg-nomad-surface p-6">
-        <Loader2 className="h-5 w-5 animate-spin text-nomad-teal-light" />
-        <span className="text-sm text-nomad-muted">Loading weather forecast...</span>
+      <div className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white p-6">
+        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+        <span className="text-sm text-gray-500">Loading weather...</span>
       </div>
     )
   }
 
-  if (error) {
-    return (
-      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
-        <div className="flex items-start gap-2">
-          <AlertCircle className="mt-0.5 shrink-0 text-amber-400" size={18} />
-          <div>
-            <p className="text-sm font-medium text-amber-200">Weather unavailable</p>
-            <p className="mt-1 text-xs text-amber-200/70">{error}</p>
-          </div>
-        </div>
-      </div>
-    )
+  if (error || days.length === 0) {
+    return null
   }
+
+  const minTemp = Math.min(...days.map((d) => d.tempMin))
+  const maxTemp = Math.max(...days.map((d) => d.tempMax))
+  const hasRain = suggestions.some((s) => s.toLowerCase().includes('rain'))
 
   return (
-    <div className="space-y-4 rounded-2xl bg-nomad-surface p-4">
-      <div className="flex items-center gap-2">
-        <Thermometer size={18} className="text-nomad-teal-light" />
-        <h3 className="font-semibold">Weather Forecast</h3>
+    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Cloud size={18} className="text-gray-600" />
+          <h3 className="font-semibold text-black">Weather Forecast</h3>
+        </div>
+        <div className="text-right text-sm">
+          <p className="font-medium">{minTemp}°–{maxTemp}°C</p>
+          {hasRain && <p className="text-gray-500">Rain likely</p>}
+        </div>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1">
         {days.map((day) => (
           <div
             key={day.date}
-            className="min-w-[72px] shrink-0 rounded-xl bg-nomad-dark/50 p-3 text-center"
+            className="min-w-[64px] shrink-0 rounded-xl bg-gray-50 p-2.5 text-center"
           >
-            <p className="text-xs text-nomad-muted">
+            <p className="text-[10px] font-medium uppercase text-gray-500">
               {new Date(day.date + 'T12:00:00').toLocaleDateString('en', { weekday: 'short' })}
             </p>
             <div className="my-1 flex justify-center">
               <WeatherIcon code={day.weatherCode} />
             </div>
-            <p className="text-sm font-medium">{day.tempMax}°</p>
-            <p className="text-xs text-nomad-muted">{day.tempMin}°</p>
+            <p className="text-sm font-semibold">{day.tempMax}°</p>
+            <p className="text-xs text-gray-400">{day.tempMin}°</p>
           </div>
         ))}
       </div>
 
       {suggestions.length > 0 && (
-        <div className="space-y-2 border-t border-slate-700 pt-3">
-          <p className="text-xs font-medium uppercase tracking-wide text-nomad-muted">
-            Packing suggestions
+        <div className="mt-4 flex items-start gap-2 rounded-xl bg-gray-100 px-3 py-2.5">
+          <Lightbulb size={16} className="mt-0.5 shrink-0 text-gray-600" />
+          <p className="text-sm text-gray-700">
+            {hasRain
+              ? "Rain is expected. Don't forget an umbrella and rain jacket!"
+              : suggestions[0]}
           </p>
-          {suggestions.map((s) => (
-            <p key={s} className="text-sm text-slate-300">• {s}</p>
-          ))}
         </div>
       )}
     </div>
