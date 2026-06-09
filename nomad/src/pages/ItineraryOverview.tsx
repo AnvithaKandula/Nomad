@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { useTrips } from '../contexts/TripContext'
 import { PageHeader } from '../components/ui/PageHeader'
+import { PageContainer } from '../components/layout/PageContainer'
 import { ActivityCategoryIcon } from '../lib/categoryIcons'
 
 export function ItineraryOverview() {
@@ -14,13 +15,13 @@ export function ItineraryOverview() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-8">
+    <PageContainer>
       <PageHeader title="Itinerary" subtitle="Upcoming activities across all trips" />
 
       {trips.length === 0 ? (
         <p className="py-12 text-center text-gray-500">Create a trip to plan your itinerary</p>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
           {trips.map((trip) => {
             const activities = itinerary.filter((i) => i.trip_id === trip.id)
             const preview = activities.slice(0, 5)
@@ -60,6 +61,6 @@ export function ItineraryOverview() {
           })}
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, Trash2, Search } from 'lucide-react'
 import { useTrips } from '../contexts/TripContext'
 import { PageHeader } from '../components/ui/PageHeader'
+import { PageContainer } from '../components/layout/PageContainer'
 import { ClosetCategoryIcon } from '../lib/categoryIcons'
 import type { ItemCategory } from '../types'
 
@@ -32,7 +33,7 @@ export function MasterCloset() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-8">
+    <PageContainer>
       <PageHeader
         title="Closet"
         subtitle={`${closet.length} items in your inventory`}
@@ -89,7 +90,7 @@ export function MasterCloset() {
               <ClosetCategoryIcon category={cat} size={14} />
               {cat} ({items.length})
             </h3>
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((item) => (
                 <div
                   key={item.id}
@@ -105,6 +106,6 @@ export function MasterCloset() {
           </div>
         ))
       )}
-    </div>
+    </PageContainer>
   )
 }

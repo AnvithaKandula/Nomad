@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useTrips } from '../contexts/TripContext'
 import { Button } from '../components/ui/Button'
 import { PageHeader } from '../components/ui/PageHeader'
+import { PageContainer } from '../components/layout/PageContainer'
 import { BannerThemeIcon } from '../lib/categoryIcons'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { BannerTheme } from '../types'
@@ -25,7 +26,7 @@ export function Settings() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-8">
+    <PageContainer>
       <PageHeader title="Settings" subtitle="Customize your Nomad experience" />
 
       <section className="mb-8">
@@ -36,7 +37,7 @@ export function Settings() {
         <p className="mb-4 text-sm text-gray-500">
           Choose what style of image is used for trip banners.
         </p>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:max-w-3xl">
           {themes.map(({ id, label, description }) => (
             <button
               key={id}
@@ -83,6 +84,6 @@ export function Settings() {
       <Button variant="outline" onClick={handleSignOut} className="w-full">
         <LogOut size={16} className="mr-2 inline" /> Sign Out
       </Button>
-    </div>
+    </PageContainer>
   )
 }

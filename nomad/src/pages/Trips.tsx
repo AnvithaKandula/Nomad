@@ -5,6 +5,7 @@ import { differenceInDays, format, isPast, parseISO } from 'date-fns'
 import { useTrips } from '../contexts/TripContext'
 import { TripForm } from '../components/trips/TripForm'
 import { PageHeader } from '../components/ui/PageHeader'
+import { PageContainer } from '../components/layout/PageContainer'
 import { fetchLocationImage } from '../lib/geocoding'
 
 function tripStatus(endDate: string) {
@@ -25,7 +26,7 @@ export function Trips() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-8">
+    <PageContainer>
       <PageHeader
         title="Nomad"
         subtitle="Your travel companion"
@@ -66,7 +67,7 @@ export function Trips() {
           <p className="text-gray-500">No trips yet. Tap + to create one!</p>
         </div>
       ) : (
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
           {trips.map((trip) => {
             const days = differenceInDays(parseISO(trip.end_date), parseISO(trip.start_date)) + 1
             const status = tripStatus(trip.end_date)
@@ -76,7 +77,7 @@ export function Trips() {
                 className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200"
               >
                 <button onClick={() => openTrip(trip.id)} className="w-full text-left">
-                  <div className="relative h-44">
+                  <div className="relative h-44 md:h-52 lg:h-56">
                     <img
                       src={trip.image_url ?? `https://source.unsplash.com/featured/800x400/?${trip.destination_name},travel`}
                       alt={trip.destination_name}
@@ -119,6 +120,6 @@ export function Trips() {
           })}
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }

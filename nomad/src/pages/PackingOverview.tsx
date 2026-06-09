@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { useTrips } from '../contexts/TripContext'
 import { PageHeader } from '../components/ui/PageHeader'
+import { PageContainer } from '../components/layout/PageContainer'
 
 export function PackingOverview() {
   const { trips, tripItems, setActiveTripId } = useTrips()
@@ -13,13 +14,13 @@ export function PackingOverview() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-8">
+    <PageContainer>
       <PageHeader title="Packing" subtitle="Your packing lists at a glance" />
 
       {trips.length === 0 ? (
         <p className="py-12 text-center text-gray-500">Create a trip to start packing</p>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 lg:gap-5">
           {trips.map((trip) => {
             const items = tripItems.filter((i) => i.trip_id === trip.id)
             const packed = items.filter((i) => i.is_packed).length
@@ -51,6 +52,6 @@ export function PackingOverview() {
           })}
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }
