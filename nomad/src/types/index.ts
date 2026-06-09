@@ -90,4 +90,5 @@ export interface ActivityOption {
   description: string
   bookingUrl: string
   popular?: boolean
+  placeId?: string
 }
