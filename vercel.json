@@ -1,0 +1,7 @@
+{
+  "installCommand": "cd nomad && npm install",
+  "buildCommand": "cd nomad && npm run build",
+  "outputDirectory": "nomad/dist",
+  "framework": "vite",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
