@@ -22,6 +22,7 @@ interface TripItineraryTabProps {
 export function TripItineraryTab({ tripId }: TripItineraryTabProps) {
   const { trips, itinerary, addItineraryEntry, deleteItineraryEntry } = useTrips()
   const [discover, setDiscover] = useState(false)
+  const [quizOpen, setQuizOpen] = useState(false)
   const trip = trips.find((t) => t.id === tripId)
   const entries = itinerary.filter((i) => i.trip_id === tripId)
 
@@ -43,22 +44,30 @@ export function TripItineraryTab({ tripId }: TripItineraryTabProps) {
     setDiscover(false)
   }
 
+  const handleQuizComplete = async (
+    items: { activity_name: string; category: string; date: string; time: string }[],
+  ) => {
+    for (const entry of entries) {
+      await deleteItineraryEntry(entry.id)
+    }
+    for (const item of items) {
+      await addItineraryEntry({
+        trip_id: tripId,
+        activity_name: item.activity_name,
+        category: item.category,
+        date: item.date,
+        time: item.time,
+        booking_url: null,
+      })
+    }
+  }
+
   if (discover && trip) {
     return (
       <div className="space-y-4">
         <button onClick={() => setDiscover(false)} className="text-sm text-gray-500 hover:text-black">
           ← Back to schedule
         </button>
-        <ItineraryQuiz
-          startDate={trip.start_date}
-          endDate={trip.end_date}
-          onComplete={async (items) => {
-            for (const e of items) {
-              await addItineraryEntry({ trip_id: tripId, ...e, booking_url: null })
-            }
-            setDiscover(false)
-          }}
-        />
         <ActivitySearch destination={trip.destination_name} onAdd={addActivity} />
       </div>
     )
@@ -66,8 +75,19 @@ export function TripItineraryTab({ tripId }: TripItineraryTabProps) {
 
   return (
     <div>
+      {trip && (
+        <ItineraryQuiz
+          open={quizOpen}
+          onClose={() => setQuizOpen(false)}
+          startDate={trip.start_date}
+          endDate={trip.end_date}
+          destination={trip.destination_name}
+          onComplete={handleQuizComplete}
+        />
+      )}
+
       <div className="mb-4 flex justify-end gap-2">
-        <Button variant="secondary" className="!px-3 !py-2 text-xs">
+        <Button variant="secondary" className="!px-3 !py-2 text-xs" onClick={() => setQuizOpen(true)}>
           <Wand2 size={14} className="mr-1 inline" /> Auto Plan
         </Button>
         <Button variant="secondary" className="!px-3 !py-2 text-xs" onClick={() => setDiscover(true)}>
@@ -79,7 +99,12 @@ export function TripItineraryTab({ tripId }: TripItineraryTabProps) {
       </div>
 
       {Object.keys(grouped).length === 0 ? (
-        <p className="py-8 text-center text-sm text-gray-500">No activities yet. Tap Discover to add some!</p>
+        <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-10 text-center">
+          <p className="text-sm text-gray-500">No activities yet.</p>
+          <Button variant="secondary" className="mt-4" onClick={() => setQuizOpen(true)}>
+            <Wand2 size={14} className="mr-1.5 inline" /> Auto Plan My Trip
+          </Button>
+        </div>
       ) : (
         Object.entries(grouped)
           .sort(([a], [b]) => a.localeCompare(b))

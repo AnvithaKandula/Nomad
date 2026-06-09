@@ -137,14 +137,35 @@ export interface QuizAnswer {
   budget: string
 }
 
-export function generateItineraryFromQuiz(
-  answers: QuizAnswer,
-  startDate: string,
-  tripDays: number,
-): { activity_name: string; category: ActivityCategory; date: string; time: string }[] {
-  const entries: { activity_name: string; category: ActivityCategory; date: string; time: string }[] = []
-  const start = new Date(startDate)
+const LUXURY_ACTIVITIES = new Set(['Fine Dining Experience', 'Hot Air Balloon Ride', 'Spa & Wellness Day', 'Ski Resort Day Pass'])
+const BUDGET_ACTIVITIES = new Set([
+  'City Walking Tour',
+  'Food & Market Tour',
+  'Coastal Hiking',
+  'Beach Day & Water Sports',
+])
 
+const STYLE_BOOST: Record<string, ActivityCategory[]> = {
+  explorer: ['sightseeing', 'dining', 'hiking'],
+  relaxer: ['beach', 'dining', 'formal'],
+  adventurer: ['hiking', 'swimming', 'camping'],
+}
+
+function getTimeForCategory(category: ActivityCategory, slot: number): string {
+  if (category === 'nightlife') return '20:00'
+  if (category === 'dining' && slot > 0) return '19:00'
+  if (category === 'formal' && slot > 0) return '18:30'
+  if (slot === 0) return '09:30'
+  if (slot === 1) return '14:00'
+  return '17:30'
+}
+
+function formatActivityName(name: string, destination?: string): string {
+  if (!destination) return name
+  return `${name} — ${destination}`
+}
+
+function buildActivityPool(answers: QuizAnswer): ActivityOption[] {
   const interestMap: Record<string, ActivityCategory[]> = {
     nature: ['hiking', 'camping', 'sightseeing'],
     culture: ['sightseeing', 'dining', 'formal'],
@@ -154,10 +175,51 @@ export function generateItineraryFromQuiz(
     business: ['business', 'formal', 'dining'],
   }
 
-  const categories = answers.interests.flatMap((i) => interestMap[i] ?? ['sightseeing'])
-  const uniqueCategories = [...new Set(categories)]
+  const categories = [
+    ...new Set([
+      ...answers.interests.flatMap((i) => interestMap[i] ?? ['sightseeing']),
+      ...(STYLE_BOOST[answers.travelStyle] ?? []),
+    ]),
+  ]
 
+  let pool = ACTIVITY_DATABASE.filter((a) => categories.includes(a.category))
+
+  if (answers.budget === 'budget') {
+    const budgetPool = pool.filter((a) => BUDGET_ACTIVITIES.has(a.name))
+    if (budgetPool.length > 0) pool = budgetPool
+  } else if (answers.budget === 'luxury') {
+    const luxuryPool = pool.filter((a) => LUXURY_ACTIVITIES.has(a.name))
+    pool = luxuryPool.length > 0 ? [...luxuryPool, ...pool] : pool
+  }
+
+  return pool.length > 0 ? pool : ACTIVITY_DATABASE.filter((a) => a.popular)
+}
+
+export function generateItineraryFromQuiz(
+  answers: QuizAnswer,
+  startDate: string,
+  tripDays: number,
+  destination?: string,
+): { activity_name: string; category: ActivityCategory; date: string; time: string }[] {
+  const entries: { activity_name: string; category: ActivityCategory; date: string; time: string }[] = []
+  const start = new Date(startDate + 'T12:00:00')
+  const pool = buildActivityPool(answers)
   const activitiesPerDay = answers.pace === 'relaxed' ? 1 : answers.pace === 'moderate' ? 2 : 3
+  const usedNames = new Set<string>()
+  let poolIndex = 0
+
+  const pickActivity = (day: number, slot: number): ActivityOption => {
+    for (let attempt = 0; attempt < pool.length; attempt++) {
+      const activity = pool[(poolIndex + attempt) % pool.length]
+      const key = `${activity.name}-${day}`
+      if (!usedNames.has(key)) {
+        usedNames.add(key)
+        poolIndex = (poolIndex + attempt + 1) % pool.length
+        return activity
+      }
+    }
+    return pool[(day * activitiesPerDay + slot) % pool.length]
+  }
 
   for (let day = 0; day < tripDays; day++) {
     const date = new Date(start)
@@ -165,15 +227,12 @@ export function generateItineraryFromQuiz(
     const dateStr = date.toISOString().split('T')[0]
 
     for (let slot = 0; slot < activitiesPerDay; slot++) {
-      const cat = uniqueCategories[(day * activitiesPerDay + slot) % uniqueCategories.length]
-      const match = ACTIVITY_DATABASE.find((a) => a.category === cat)
-      const time = slot === 0 ? '09:00' : slot === 1 ? '14:00' : '19:00'
-
+      const activity = pickActivity(day, slot)
       entries.push({
-        activity_name: match?.name ?? `${cat.charAt(0).toUpperCase() + cat.slice(1)} Activity`,
-        category: cat,
+        activity_name: formatActivityName(activity.name, destination),
+        category: activity.category,
         date: dateStr,
-        time,
+        time: getTimeForCategory(activity.category, slot),
       })
     }
   }
