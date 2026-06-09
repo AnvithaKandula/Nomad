@@ -2,18 +2,10 @@ import { useState } from 'react'
 import { Plus, Trash2, Search } from 'lucide-react'
 import { useTrips } from '../contexts/TripContext'
 import { PageHeader } from '../components/ui/PageHeader'
+import { ClosetCategoryIcon } from '../lib/categoryIcons'
 import type { ItemCategory } from '../types'
 
 const CATEGORIES: ItemCategory[] = ['clothing', 'tech', 'toiletry', 'accessory', 'footwear', 'other']
-
-const categoryEmoji: Record<string, string> = {
-  clothing: '👕',
-  footwear: '👟',
-  tech: '💻',
-  toiletry: '🧴',
-  accessory: '👜',
-  other: '📦',
-}
 
 export function MasterCloset() {
   const { closet, addClosetItem, deleteClosetItem } = useTrips()
@@ -93,8 +85,9 @@ export function MasterCloset() {
       ) : (
         Object.entries(grouped).map(([cat, items]) => (
           <div key={cat} className="mb-6">
-            <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-              {categoryEmoji[cat]} {cat} ({items.length})
+            <h3 className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+              <ClosetCategoryIcon category={cat} size={14} />
+              {cat} ({items.length})
             </h3>
             <div className="space-y-2">
               {items.map((item) => (

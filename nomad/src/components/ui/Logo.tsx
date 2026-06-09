@@ -1,26 +1,19 @@
+import { LogoMark } from './LogoMark'
+
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg'
   showTagline?: boolean
+  markClassName?: string
 }
 
-const iconSizes = { sm: 52, md: 80, lg: 108 }
+const markSizes = { sm: 56, md: 84, lg: 112 }
 const titleSizes = { sm: 'text-base', md: 'text-xl', lg: 'text-2xl' }
 const taglineSizes = { sm: 'text-[8px]', md: 'text-[9px]', lg: 'text-[10px]' }
 
-export function Logo({ size = 'lg', showTagline = true }: LogoProps) {
-  const icon = iconSizes[size]
-
+export function Logo({ size = 'lg', showTagline = true, markClassName = 'text-black' }: LogoProps) {
   return (
     <div className="flex flex-col items-center text-center">
-      <img
-        src="/logo.svg"
-        alt=""
-        aria-hidden
-        width={icon}
-        height={Math.round(icon * 1.15)}
-        className="object-contain"
-        style={{ background: 'transparent' }}
-      />
+      <LogoMark size={markSizes[size]} className={markClassName} />
       <p className={`mt-5 font-sans font-bold tracking-[0.32em] text-black ${titleSizes[size]}`}>
         NOMAD
       </p>

@@ -2,16 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { useTrips } from '../contexts/TripContext'
 import { PageHeader } from '../components/ui/PageHeader'
-
-const activityEmojis: Record<string, string> = {
-  sightseeing: '🏰',
-  formal: '🎩',
-  dining: '🍽️',
-  hiking: '🥾',
-  beach: '🏖️',
-  swimming: '🏊',
-  default: '📌',
-}
+import { ActivityCategoryIcon } from '../lib/categoryIcons'
 
 export function ItineraryOverview() {
   const { trips, itinerary, setActiveTripId } = useTrips()
@@ -49,9 +40,10 @@ export function ItineraryOverview() {
                   {preview.map((a) => (
                     <span
                       key={a.id}
-                      className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700"
                     >
-                      {activityEmojis[a.category] ?? activityEmojis.default} {a.activity_name}
+                      <ActivityCategoryIcon category={a.category} size={12} />
+                      {a.activity_name}
                     </span>
                   ))}
                   {more > 0 && (

@@ -4,13 +4,14 @@ import { useAuth } from '../contexts/AuthContext'
 import { useTrips } from '../contexts/TripContext'
 import { Button } from '../components/ui/Button'
 import { PageHeader } from '../components/ui/PageHeader'
+import { BannerThemeIcon } from '../lib/categoryIcons'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { BannerTheme } from '../types'
 
-const themes: { id: BannerTheme; label: string; emoji: string; description: string }[] = [
-  { id: 'landmark', label: 'Famous Landmark', emoji: '🏛️', description: 'Iconic buildings & monuments' },
-  { id: 'flag', label: 'Country Flag', emoji: '🏳️', description: 'National flag of destination' },
-  { id: 'national_flower', label: 'National Flower', emoji: '🌸', description: 'Floral symbol of the country' },
+const themes: { id: BannerTheme; label: string; description: string }[] = [
+  { id: 'landmark', label: 'Famous Landmark', description: 'Iconic buildings & monuments' },
+  { id: 'flag', label: 'Country Flag', description: 'National flag of destination' },
+  { id: 'national_flower', label: 'National Flower', description: 'Floral symbol of the country' },
 ]
 
 export function Settings() {
@@ -29,14 +30,14 @@ export function Settings() {
 
       <section className="mb-8">
         <div className="mb-4 flex items-center gap-2">
-          <Palette size={18} className="text-gray-600" />
+          <Palette size={18} className="text-gray-600" strokeWidth={1.75} />
           <h2 className="font-semibold text-black">Trip Banner Style</h2>
         </div>
         <p className="mb-4 text-sm text-gray-500">
           Choose what style of image is used for trip banners.
         </p>
         <div className="grid grid-cols-2 gap-3">
-          {themes.map(({ id, label, emoji, description }) => (
+          {themes.map(({ id, label, description }) => (
             <button
               key={id}
               onClick={() => setBannerTheme(id)}
@@ -51,7 +52,10 @@ export function Settings() {
                   <Check size={12} />
                 </span>
               )}
-              <span className="text-2xl">{emoji}</span>
+              <BannerThemeIcon
+                theme={id}
+                className={bannerTheme === id ? 'text-black' : 'text-gray-500'}
+              />
               <p className="mt-2 text-sm font-semibold text-black">{label}</p>
               <p className="mt-0.5 text-xs text-gray-500">{description}</p>
             </button>
@@ -61,7 +65,7 @@ export function Settings() {
 
       <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
         <div className="flex items-start gap-3">
-          <Database className="mt-0.5 shrink-0 text-gray-600" size={20} />
+          <Database className="mt-0.5 shrink-0 text-gray-600" size={20} strokeWidth={1.75} />
           <div>
             <p className="font-medium text-black">Supabase Connection</p>
             <p className="mt-1 text-sm text-gray-500">
