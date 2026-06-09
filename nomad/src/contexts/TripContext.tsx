@@ -31,6 +31,7 @@ interface TripContextValue {
   addTripItem: (tripId: string, name: string, suggested?: boolean) => Promise<void>
   deleteTripItem: (itemId: string) => Promise<void>
   addItineraryEntry: (entry: Omit<ItineraryEntry, 'id' | 'created_at'>) => Promise<void>
+  updateItineraryEntry: (id: string, updates: Partial<Pick<ItineraryEntry, 'activity_name' | 'category' | 'date' | 'time' | 'booking_url' | 'notes'>>) => Promise<void>
   deleteItineraryEntry: (id: string) => Promise<void>
   setBannerTheme: (theme: BannerTheme) => Promise<void>
 }
@@ -294,6 +295,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   const addItineraryEntry = async (entry: Omit<ItineraryEntry, 'id' | 'created_at'>) => {
     const full: ItineraryEntry = {
       ...entry,
+      notes: entry.notes ?? null,
       id: crypto.randomUUID(),
       created_at: new Date().toISOString(),
     }
@@ -331,6 +333,23 @@ export function TripProvider({ children }: { children: ReactNode }) {
     }
     await requireSupabase().from('itinerary').insert(full)
     await refreshTrips()
+  }
+
+  const updateItineraryEntry = async (
+    id: string,
+    updates: Partial<Pick<ItineraryEntry, 'activity_name' | 'category' | 'date' | 'time' | 'booking_url' | 'notes'>>,
+  ) => {
+    if (useLocal) {
+      const demo = loadDemoData()
+      demo.itinerary = (demo.itinerary ?? []).map((i: ItineraryEntry) =>
+        i.id === id ? { ...i, ...updates } : i,
+      )
+      saveDemoData(demo)
+      setItinerary(demo.itinerary.filter((i: ItineraryEntry) => i.trip_id === activeTripId))
+      return
+    }
+    await requireSupabase().from('itinerary').update(updates).eq('id', id)
+    setItinerary((prev) => prev.map((i) => (i.id === id ? { ...i, ...updates } : i)))
   }
 
   const deleteItineraryEntry = async (id: string) => {
@@ -386,6 +405,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
         addTripItem,
         deleteTripItem,
         addItineraryEntry,
+        updateItineraryEntry,
         deleteItineraryEntry,
         setBannerTheme,
       }}

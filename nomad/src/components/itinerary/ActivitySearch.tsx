@@ -7,10 +7,10 @@ import { Button } from '../ui/Button'
 
 interface ActivitySearchProps {
   destination?: string
-  onAdd: (activity: ActivityOption) => void
+  onSelect: (activity: ActivityOption) => void
 }
 
-export function ActivitySearch({ destination, onAdd }: ActivitySearchProps) {
+export function ActivitySearch({ destination, onSelect }: ActivitySearchProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<ActivityOption[]>([])
   const [loading, setLoading] = useState(true)
@@ -89,7 +89,7 @@ export function ActivitySearch({ destination, onAdd }: ActivitySearchProps) {
                       <Button
                         variant="primary"
                         className="!px-3 !py-1.5 text-xs"
-                        onClick={() => onAdd(activity)}
+                        onClick={() => onSelect(activity)}
                       >
                         <Plus size={14} className="mr-1 inline" /> Add
                       </Button>

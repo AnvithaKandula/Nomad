@@ -59,6 +59,7 @@ export interface ItineraryEntry {
   date: string
   time: string | null
   booking_url: string | null
+  notes: string | null
   created_at: string
 }
 

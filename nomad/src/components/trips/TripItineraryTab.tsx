@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { format, parseISO } from 'date-fns'
-import { Trash2, Wand2, Search, Plus, Camera, Utensils, MapPin, Mountain } from 'lucide-react'
+import { Trash2, Wand2, Search, Plus, Camera, Utensils, MapPin, Mountain, Pencil, ExternalLink, StickyNote } from 'lucide-react'
 import { useTrips } from '../../contexts/TripContext'
 import { ActivitySearch } from '../itinerary/ActivitySearch'
 import { ItineraryQuiz } from '../itinerary/ItineraryQuiz'
+import { AddActivityModal } from '../itinerary/AddActivityModal'
+import { EditItineraryModal } from '../itinerary/EditItineraryModal'
 import { Button } from '../ui/Button'
-import type { ActivityOption } from '../../types'
+import type { ActivityOption, ItineraryEntry } from '../../types'
 
 const categoryIcons: Record<string, typeof Camera> = {
   sightseeing: Camera,
@@ -20,9 +22,11 @@ interface TripItineraryTabProps {
 }
 
 export function TripItineraryTab({ tripId }: TripItineraryTabProps) {
-  const { trips, itinerary, addItineraryEntry, deleteItineraryEntry } = useTrips()
+  const { trips, itinerary, addItineraryEntry, updateItineraryEntry, deleteItineraryEntry } = useTrips()
   const [discover, setDiscover] = useState(false)
   const [quizOpen, setQuizOpen] = useState(false)
+  const [pendingActivity, setPendingActivity] = useState<ActivityOption | null>(null)
+  const [editingEntry, setEditingEntry] = useState<ItineraryEntry | null>(null)
   const trip = trips.find((t) => t.id === tripId)
   const entries = itinerary.filter((i) => i.trip_id === tripId)
 
@@ -31,16 +35,18 @@ export function TripItineraryTab({ tripId }: TripItineraryTabProps) {
     return acc
   }, {})
 
-  const addActivity = async (activity: ActivityOption) => {
-    if (!trip) return
+  const confirmAddActivity = async (details: { date: string; time: string; booking_url: string | null }) => {
+    if (!trip || !pendingActivity) return
     await addItineraryEntry({
       trip_id: tripId,
-      activity_name: activity.name,
-      category: activity.category,
-      date: trip.start_date,
-      time: '10:00',
-      booking_url: activity.bookingUrl,
+      activity_name: pendingActivity.name,
+      category: pendingActivity.category,
+      date: details.date,
+      time: details.time,
+      booking_url: details.booking_url,
+      notes: null,
     })
+    setPendingActivity(null)
     setDiscover(false)
   }
 
@@ -58,32 +64,55 @@ export function TripItineraryTab({ tripId }: TripItineraryTabProps) {
         date: item.date,
         time: item.time,
         booking_url: null,
+        notes: null,
       })
     }
   }
 
   if (discover && trip) {
     return (
-      <div className="space-y-4">
-        <button onClick={() => setDiscover(false)} className="text-sm text-gray-500 hover:text-black">
-          ← Back to schedule
-        </button>
-        <ActivitySearch destination={trip.destination_name} onAdd={addActivity} />
-      </div>
+      <>
+        <AddActivityModal
+          open={!!pendingActivity}
+          activity={pendingActivity}
+          startDate={trip.start_date}
+          endDate={trip.end_date}
+          onClose={() => setPendingActivity(null)}
+          onConfirm={confirmAddActivity}
+        />
+        <div className="space-y-4">
+          <button onClick={() => setDiscover(false)} className="text-sm text-gray-500 hover:text-black">
+            ← Back to schedule
+          </button>
+          <ActivitySearch destination={trip.destination_name} onSelect={(activity) => setPendingActivity(activity)} />
+        </div>
+      </>
     )
   }
 
   return (
     <div>
       {trip && (
-        <ItineraryQuiz
-          open={quizOpen}
-          onClose={() => setQuizOpen(false)}
-          startDate={trip.start_date}
-          endDate={trip.end_date}
-          destination={trip.destination_name}
-          onComplete={handleQuizComplete}
-        />
+        <>
+          <ItineraryQuiz
+            open={quizOpen}
+            onClose={() => setQuizOpen(false)}
+            startDate={trip.start_date}
+            endDate={trip.end_date}
+            destination={trip.destination_name}
+            onComplete={handleQuizComplete}
+          />
+          <EditItineraryModal
+            open={!!editingEntry}
+            entry={editingEntry}
+            startDate={trip.start_date}
+            endDate={trip.end_date}
+            onClose={() => setEditingEntry(null)}
+            onSave={async (updates) => {
+              if (editingEntry) await updateItineraryEntry(editingEntry.id, updates)
+            }}
+          />
+        </>
       )}
 
       <div className="mb-4 flex justify-end gap-2">
@@ -114,32 +143,61 @@ export function TripItineraryTab({ tripId }: TripItineraryTabProps) {
                 {format(parseISO(date), 'EEEE, MMMM d')}
               </h3>
               <div className="space-y-0">
-                {dayEntries.map((entry, idx) => {
-                  const Icon = categoryIcons[entry.category] ?? categoryIcons.default
-                  return (
-                    <div key={entry.id} className="flex gap-3">
-                      <div className="flex flex-col items-center">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white">
-                          <Icon size={14} className="text-gray-600" />
-                        </div>
-                        {idx < dayEntries.length - 1 && <div className="w-px flex-1 bg-gray-200" />}
-                      </div>
-                      <div className="mb-4 flex-1 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <p className="font-semibold text-black">{entry.activity_name}</p>
-                            <p className="mt-1 text-xs text-gray-500">
-                              {entry.time?.slice(0, 5)} · <span className="capitalize">{entry.category.replace('_', ' ')}</span>
-                            </p>
+                {[...dayEntries]
+                  .sort((a, b) => (a.time ?? '').localeCompare(b.time ?? ''))
+                  .map((entry, idx, sorted) => {
+                    const Icon = categoryIcons[entry.category] ?? categoryIcons.default
+                    return (
+                      <div key={entry.id} className="flex gap-3">
+                        <div className="flex flex-col items-center">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white">
+                            <Icon size={14} className="text-gray-600" />
                           </div>
-                          <button onClick={() => deleteItineraryEntry(entry.id)} className="text-gray-400 hover:text-black">
-                            <Trash2 size={14} />
-                          </button>
+                          {idx < sorted.length - 1 && <div className="w-px flex-1 bg-gray-200" />}
+                        </div>
+                        <div className="mb-4 flex-1 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-semibold text-black">{entry.activity_name}</p>
+                              <p className="mt-1 text-xs text-gray-500">
+                                {entry.time?.slice(0, 5)} · <span className="capitalize">{entry.category.replace('_', ' ')}</span>
+                              </p>
+                              {entry.notes && (
+                                <p className="mt-2 flex items-start gap-1.5 text-sm text-gray-600">
+                                  <StickyNote size={14} className="mt-0.5 shrink-0 text-gray-400" />
+                                  <span className="whitespace-pre-wrap">{entry.notes}</span>
+                                </p>
+                              )}
+                              {entry.booking_url && (
+                                <a
+                                  href={entry.booking_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-black hover:underline"
+                                >
+                                  Booking link <ExternalLink size={12} />
+                                </a>
+                              )}
+                            </div>
+                            <div className="flex shrink-0 gap-1">
+                              <button
+                                onClick={() => setEditingEntry(entry)}
+                                className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-black"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              <button
+                                onClick={() => deleteItineraryEntry(entry.id)}
+                                className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-black"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
               </div>
             </div>
           ))

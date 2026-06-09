@@ -62,12 +62,12 @@ export function seedGuestData() {
       { id: 'ti10', trip_id: tripMontreal, item_name: 'Portable charger', is_packed: true, is_suggested: true, category: 'tech', created_at: new Date().toISOString() },
     ],
     itinerary: [
-      { id: 'it1', trip_id: tripMontreal, activity_name: 'Explore Old Montreal', category: 'sightseeing', date: '2026-06-10', time: '14:00', booking_url: null, created_at: new Date().toISOString() },
-      { id: 'it2', trip_id: tripMontreal, activity_name: 'Dinner at Toqué!', category: 'formal', date: '2026-06-11', time: '19:00', booking_url: null, created_at: new Date().toISOString() },
-      { id: 'it3', trip_id: tripMontreal, activity_name: 'Shopping on Rue Saint-Catherine', category: 'sightseeing', date: '2026-06-12', time: '11:00', booking_url: null, created_at: new Date().toISOString() },
-      { id: 'it4', trip_id: tripMontreal, activity_name: 'Visit the Montreal Museum of Fine Arts', category: 'sightseeing', date: '2026-06-13', time: '10:00', booking_url: null, created_at: new Date().toISOString() },
-      { id: 'it5', trip_id: tripMontreal, activity_name: 'Royal Mountain Hiking', category: 'hiking', date: '2026-06-14', time: '08:00', booking_url: null, created_at: new Date().toISOString() },
-      { id: 'it6', trip_id: tripBarcelona, activity_name: 'Sagrada Família Tour', category: 'sightseeing', date: '2026-05-02', time: '10:00', booking_url: null, created_at: new Date().toISOString() },
+      { id: 'it1', trip_id: tripMontreal, activity_name: 'Explore Old Montreal', category: 'sightseeing', date: '2026-06-10', time: '14:00', booking_url: null, notes: 'Meet at Place Jacques-Cartier', created_at: new Date().toISOString() },
+      { id: 'it2', trip_id: tripMontreal, activity_name: 'Dinner at Toqué!', category: 'formal', date: '2026-06-11', time: '19:00', booking_url: 'https://www.opentable.com', notes: 'Reservation under guest name', created_at: new Date().toISOString() },
+      { id: 'it3', trip_id: tripMontreal, activity_name: 'Shopping on Rue Saint-Catherine', category: 'sightseeing', date: '2026-06-12', time: '11:00', booking_url: null, notes: null, created_at: new Date().toISOString() },
+      { id: 'it4', trip_id: tripMontreal, activity_name: 'Visit the Montreal Museum of Fine Arts', category: 'sightseeing', date: '2026-06-13', time: '10:00', booking_url: null, notes: null, created_at: new Date().toISOString() },
+      { id: 'it5', trip_id: tripMontreal, activity_name: 'Royal Mountain Hiking', category: 'hiking', date: '2026-06-14', time: '08:00', booking_url: null, notes: 'Bring water and trail snacks', created_at: new Date().toISOString() },
+      { id: 'it6', trip_id: tripBarcelona, activity_name: 'Sagrada Família Tour', category: 'sightseeing', date: '2026-05-02', time: '10:00', booking_url: null, notes: null, created_at: new Date().toISOString() },
     ],
   }
 
