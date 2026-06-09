@@ -79,7 +79,7 @@ export function Trips() {
                 <button onClick={() => openTrip(trip.id)} className="w-full text-left">
                   <div className="relative h-44 md:h-52 lg:h-56">
                     <img
-                      src={trip.image_url ?? `https://source.unsplash.com/featured/800x400/?${trip.destination_name},travel`}
+                      src={trip.image_url ?? `https://picsum.photos/seed/${encodeURIComponent(trip.destination_name)}/800/400`}
                       alt={trip.destination_name}
                       className="h-full w-full object-cover grayscale-[20%]"
                       onError={async (e) => {

@@ -1,5 +1,7 @@
 import type { BannerTheme, LocationSuggestion } from '../types'
 
+const UNSPLASH_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY as string | undefined
+
 export async function searchLocations(query: string): Promise<LocationSuggestion[]> {
   if (!query.trim()) return []
 
@@ -107,8 +109,48 @@ function cityName(destination: string): string {
   return destination.split(',')[0].trim()
 }
 
-function unsplashUrl(query: string): string {
-  return `https://source.unsplash.com/featured/800x400/?${encodeURIComponent(query)}`
+function fallbackImage(seed: string): string {
+  const safe = seed.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase().slice(0, 60)
+  return `https://picsum.photos/seed/${safe}/800/400`
+}
+
+async function fetchWikipediaImage(title: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
+    )
+    if (!res.ok) return null
+    const wiki = await res.json()
+    return wiki.thumbnail?.source ?? wiki.originalimage?.source ?? null
+  } catch {
+    return null
+  }
+}
+
+async function fetchUnsplashSearch(query: string): Promise<string | null> {
+  if (!UNSPLASH_KEY?.trim()) return null
+  try {
+    const res = await fetch(
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
+      { headers: { Authorization: `Client-ID ${UNSPLASH_KEY}` } },
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.results?.[0]?.urls?.regular ?? null
+  } catch {
+    return null
+  }
+}
+
+async function firstAvailableImage(
+  seed: string,
+  sources: Array<() => Promise<string | null>>,
+): Promise<string> {
+  for (const source of sources) {
+    const url = await source()
+    if (url) return url
+  }
+  return fallbackImage(seed)
 }
 
 export async function fetchLocationImage(
@@ -124,35 +166,38 @@ export async function fetchLocationImage(
 
   if (theme === 'national_flower') {
     const flower = countryCode ? (NATIONAL_FLOWERS[countryCode] ?? 'national flower') : 'national flower'
-    return unsplashUrl(`${flower},flower`)
+    return firstAvailableImage(`${theme}-${flower}`, [
+      () => fetchUnsplashSearch(`${flower} flower`),
+      () => fetchWikipediaImage(flower),
+    ])
   }
 
   if (theme === 'local_food') {
     const food = countryCode
-      ? (FAMOUS_FOODS[countryCode] ?? `${city} famous food`)
-      : `${city} famous food`
-    return unsplashUrl(`${food},food,cuisine`)
+      ? (FAMOUS_FOODS[countryCode] ?? `${city} cuisine`)
+      : `${city} cuisine`
+    return firstAvailableImage(`${theme}-${food}`, [
+      () => fetchUnsplashSearch(`${food} food`),
+      () => fetchWikipediaImage(food),
+    ])
   }
 
   if (theme === 'cityscape') {
-    return unsplashUrl(`${city},skyline,cityscape`)
+    return firstAvailableImage(`${theme}-${city}`, [
+      () => fetchUnsplashSearch(`${city} skyline`),
+      () => fetchWikipediaImage(city),
+    ])
   }
 
   if (theme === 'landmark') {
-    try {
-      const wikiRes = await fetch(
-        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(city)}`,
-      )
-      if (wikiRes.ok) {
-        const wiki = await wikiRes.json()
-        if (wiki.thumbnail?.source) return wiki.thumbnail.source
-        if (wiki.originalimage?.source) return wiki.originalimage.source
-      }
-    } catch {
-      // fall through
-    }
-    return unsplashUrl(`${city},landmark,travel`)
+    return firstAvailableImage(`${theme}-${city}`, [
+      () => fetchWikipediaImage(city),
+      () => fetchUnsplashSearch(`${city} landmark`),
+    ])
   }
 
-  return unsplashUrl(`${destination},travel`)
+  return firstAvailableImage(`travel-${destination}`, [
+    () => fetchWikipediaImage(city),
+    () => fetchUnsplashSearch(`${destination} travel`),
+  ])
 }
