@@ -103,18 +103,18 @@ export function TripForm({ initial, bannerTheme, onSubmit, onCancel }: TripFormP
           }}
         />
         {searching && (
-          <Loader2 className="absolute right-3 top-9 h-4 w-4 animate-spin text-nomad-muted" />
+          <Loader2 className="absolute right-3 top-9 h-4 w-4 animate-spin text-gray-400" />
         )}
         {suggestions.length > 0 && (
-          <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-xl border border-slate-600 bg-nomad-surface shadow-xl">
+          <ul className="absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
             {suggestions.map((s) => (
               <li key={s.display_name}>
                 <button
                   type="button"
                   onClick={() => selectLocation(s)}
-                  className="flex w-full items-start gap-2 px-4 py-3 text-left text-sm hover:bg-slate-700"
+                  className="flex w-full items-start gap-2 px-4 py-3 text-left text-sm text-black hover:bg-gray-50 dark:text-white dark:hover:bg-neutral-800"
                 >
-                  <MapPin size={16} className="mt-0.5 shrink-0 text-nomad-teal-light" />
+                  <MapPin size={16} className="mt-0.5 shrink-0 text-gray-400" />
                   <span>{s.display_name}</span>
                 </button>
               </li>
@@ -131,8 +131,8 @@ export function TripForm({ initial, bannerTheme, onSubmit, onCancel }: TripFormP
       {(imageUrl || loadingImage) && (
         <div className="relative overflow-hidden rounded-xl">
           {loadingImage ? (
-            <div className="flex h-40 items-center justify-center bg-nomad-surface">
-              <Loader2 className="h-8 w-8 animate-spin text-nomad-teal-light" />
+            <div className="flex h-40 items-center justify-center bg-gray-100 dark:bg-neutral-800">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
           ) : (
             <>
