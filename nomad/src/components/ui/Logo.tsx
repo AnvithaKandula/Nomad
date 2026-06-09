@@ -6,7 +6,7 @@ interface LogoProps {
   markClassName?: string
 }
 
-const markSizes = { sm: 56, md: 84, lg: 112 }
+const markSizes = { sm: 80, md: 120, lg: 172 }
 const titleSizes = { sm: 'text-base', md: 'text-xl', lg: 'text-2xl' }
 const taglineSizes = { sm: 'text-[8px]', md: 'text-[9px]', lg: 'text-[10px]' }
 
