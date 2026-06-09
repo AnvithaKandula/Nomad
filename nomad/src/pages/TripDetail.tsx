@@ -56,8 +56,10 @@ export function TripDetail() {
         {format(parseISO(trip.start_date), 'MMM d')} – {format(parseISO(trip.end_date), 'MMM d, yyyy')} · {days} days
       </p>
 
+      <WeatherCard trip={trip} />
+
       {editing && (
-        <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
+        <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
           <TripForm
             initial={trip}
             bannerTheme={bannerTheme}
@@ -70,35 +72,27 @@ export function TripDetail() {
         </div>
       )}
 
-      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-10 xl:gap-12">
-        <div className="lg:sticky lg:top-8">
-          <WeatherCard trip={trip} />
-        </div>
+      <div className="mt-6 flex rounded-2xl bg-gray-100 p-1 md:mt-8 md:p-1.5">
+        <button
+          onClick={() => setTab('packing')}
+          className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-colors md:py-3 md:text-base ${
+            tab === 'packing' ? 'bg-white text-black shadow-sm' : 'text-gray-500'
+          }`}
+        >
+          <Package size={16} /> Packing
+        </button>
+        <button
+          onClick={() => setTab('itinerary')}
+          className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-colors md:py-3 md:text-base ${
+            tab === 'itinerary' ? 'bg-white text-black shadow-sm' : 'text-gray-500'
+          }`}
+        >
+          <CalendarDays size={16} /> Itinerary
+        </button>
+      </div>
 
-        <div>
-          <div className="mt-6 flex rounded-2xl bg-gray-100 p-1 md:p-1.5 lg:mt-0">
-            <button
-              onClick={() => setTab('packing')}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-colors md:py-3 md:text-base ${
-                tab === 'packing' ? 'bg-white text-black shadow-sm' : 'text-gray-500'
-              }`}
-            >
-              <Package size={16} /> Packing
-            </button>
-            <button
-              onClick={() => setTab('itinerary')}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-colors md:py-3 md:text-base ${
-                tab === 'itinerary' ? 'bg-white text-black shadow-sm' : 'text-gray-500'
-              }`}
-            >
-              <CalendarDays size={16} /> Itinerary
-            </button>
-          </div>
-
-          <div className="mt-4 md:mt-6">
-            {tab === 'packing' ? <TripPackingTab tripId={trip.id} /> : <TripItineraryTab tripId={trip.id} />}
-          </div>
-        </div>
+      <div className="mt-4 md:mt-6">
+        {tab === 'packing' ? <TripPackingTab tripId={trip.id} /> : <TripItineraryTab tripId={trip.id} />}
       </div>
     </PageContainer>
   )
