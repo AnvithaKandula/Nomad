@@ -29,7 +29,7 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-[#f4f4f5] px-6 safe-top safe-bottom">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-[#f4f4f5] px-6 safe-top safe-bottom dark:bg-neutral-950">
       <div className="mb-10 w-full max-w-md">
         <Logo size="lg" />
       </div>
@@ -48,12 +48,12 @@ export function Login() {
       </Button>
 
       <div className="mt-6 w-full max-w-md space-y-2 text-center text-sm">
-        <Link to="/forgot-password" className="text-gray-600 hover:text-black hover:underline">
+        <Link to="/forgot-password" className="text-gray-600 hover:text-black hover:underline dark:text-gray-400 dark:hover:text-white">
           Forgot password?
         </Link>
-        <p className="text-gray-500">
+        <p className="text-gray-500 dark:text-gray-400">
           No account?{' '}
-          <Link to="/register" className="font-medium text-black hover:underline">
+          <Link to="/register" className="font-medium text-black hover:underline dark:text-white">
             Register
           </Link>
         </p>

@@ -41,8 +41,8 @@ export function Trips() {
       />
 
       {(showForm || editingId) && (
-        <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 font-serif text-lg font-semibold">{editingId ? 'Edit Trip' : 'New Trip'}</h2>
+        <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-neutral-700 dark:bg-neutral-900">
+          <h2 className="mb-4 font-serif text-lg font-semibold text-black dark:text-white">{editingId ? 'Edit Trip' : 'New Trip'}</h2>
           <TripForm
             initial={editingTrip}
             bannerTheme={bannerTheme}
@@ -62,9 +62,9 @@ export function Trips() {
       )}
 
       {trips.length === 0 && !showForm ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center dark:border-neutral-700 dark:bg-neutral-900">
           <MapPin className="mx-auto mb-3 text-gray-400" size={40} />
-          <p className="text-gray-500">No trips yet. Tap + to create one!</p>
+          <p className="text-gray-500 dark:text-gray-400">No trips yet. Tap + to create one!</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
@@ -74,7 +74,7 @@ export function Trips() {
             return (
               <div
                 key={trip.id}
-                className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200"
+                className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-neutral-900 dark:ring-neutral-700"
               >
                 <button onClick={() => openTrip(trip.id)} className="w-full text-left">
                   <div className="relative h-44 md:h-52 lg:h-56">
@@ -102,7 +102,7 @@ export function Trips() {
                     </h3>
                   </div>
                   <div className="flex items-center justify-between px-4 py-3">
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <Calendar size={14} />
                         {format(parseISO(trip.start_date), 'MMM d')} – {format(parseISO(trip.end_date), 'MMM d')}

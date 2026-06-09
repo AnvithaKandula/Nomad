@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { TripProvider } from './contexts/TripContext'
 import { AppShell } from './components/layout/AppShell'
+import { ThemeEffect } from './components/ThemeEffect'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
 import { ForgotPassword } from './pages/ForgotPassword'
@@ -16,8 +17,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
   if (loading) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-[#f4f4f5]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-black border-t-transparent" />
+      <div className="flex min-h-dvh items-center justify-center bg-[#f4f4f5] dark:bg-neutral-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-black border-t-transparent dark:border-white" />
       </div>
     )
   }
@@ -36,6 +37,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <TripProvider>
+              <ThemeEffect />
               <AppShell />
             </TripProvider>
           </ProtectedRoute>

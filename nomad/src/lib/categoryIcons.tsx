@@ -2,6 +2,8 @@ import {
   Landmark,
   Flag,
   Flower2,
+  UtensilsCrossed,
+  Building2,
   Shirt,
   Footprints,
   Laptop,
@@ -9,7 +11,6 @@ import {
   ShoppingBag,
   Package,
   Camera,
-  UtensilsCrossed,
   Mountain,
   Umbrella,
   Waves,
@@ -27,6 +28,8 @@ export const bannerThemeIcons: Record<BannerTheme, LucideIcon> = {
   landmark: Landmark,
   flag: Flag,
   national_flower: Flower2,
+  local_food: UtensilsCrossed,
+  cityscape: Building2,
 }
 
 export const closetCategoryIcons: Record<ItemCategory, LucideIcon> = {

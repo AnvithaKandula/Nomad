@@ -6,9 +6,11 @@ import {
   useCallback,
   type ReactNode,
 } from 'react'
-import type { Trip, TripItem, ItineraryEntry, MasterClosetItem, BannerTheme } from '../types'
+import type { Trip, TripItem, ItineraryEntry, MasterClosetItem, BannerTheme, ColorMode } from '../types'
 import { useAuth } from './AuthContext'
 import { requireSupabase, isSupabaseConfigured } from '../lib/supabase'
+import { fetchLocationImage } from '../lib/geocoding'
+import { applyColorMode, getStoredColorMode } from '../lib/appearance'
 
 interface TripContextValue {
   trips: Trip[]
@@ -17,6 +19,8 @@ interface TripContextValue {
   itinerary: ItineraryEntry[]
   closet: MasterClosetItem[]
   bannerTheme: BannerTheme
+  colorMode: ColorMode
+  themeApplying: boolean
   loading: boolean
   setActiveTripId: (id: string | null) => void
   refreshTrips: () => Promise<void>
@@ -34,6 +38,7 @@ interface TripContextValue {
   updateItineraryEntry: (id: string, updates: Partial<Pick<ItineraryEntry, 'activity_name' | 'category' | 'date' | 'time' | 'booking_url' | 'notes'>>) => Promise<void>
   deleteItineraryEntry: (id: string) => Promise<void>
   setBannerTheme: (theme: BannerTheme) => Promise<void>
+  setColorMode: (mode: ColorMode) => Promise<void>
 }
 
 const TripContext = createContext<TripContextValue | null>(null)
@@ -61,6 +66,8 @@ export function TripProvider({ children }: { children: ReactNode }) {
   const [itinerary, setItinerary] = useState<ItineraryEntry[]>([])
   const [closet, setCloset] = useState<MasterClosetItem[]>([])
   const [bannerTheme, setBannerThemeState] = useState<BannerTheme>('landmark')
+  const [colorMode, setColorModeState] = useState<ColorMode>(getStoredColorMode())
+  const [themeApplying, setThemeApplying] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const activeTrip = trips.find((t) => t.id === activeTripId) ?? null
@@ -73,6 +80,9 @@ export function TripProvider({ children }: { children: ReactNode }) {
       setTrips(data.trips ?? [])
       setCloset(data.closet ?? [])
       setBannerThemeState(data.bannerTheme ?? 'landmark')
+      const mode = data.colorMode ?? getStoredColorMode()
+      setColorModeState(mode)
+      applyColorMode(mode)
       if (activeTripId) {
         setTripItems((data.tripItems ?? []).filter((i: TripItem) => i.trip_id === activeTripId))
         setItinerary((data.itinerary ?? []).filter((i: ItineraryEntry) => i.trip_id === activeTripId))
@@ -89,7 +99,12 @@ export function TripProvider({ children }: { children: ReactNode }) {
 
     setTrips(tripsRes.data ?? [])
     setCloset(closetRes.data ?? [])
-    if (settingsRes.data) setBannerThemeState(settingsRes.data.banner_theme)
+    if (settingsRes.data) {
+      setBannerThemeState(settingsRes.data.banner_theme)
+      const mode = settingsRes.data.color_mode ?? getStoredColorMode()
+      setColorModeState(mode)
+      applyColorMode(mode)
+    }
 
     if (activeTripId) {
       const [itemsRes, itinRes] = await Promise.all([
@@ -364,6 +379,47 @@ export function TripProvider({ children }: { children: ReactNode }) {
     setItinerary((prev) => prev.filter((i) => i.id !== id))
   }
 
+  const applyBannerThemeToAllTrips = async (theme: BannerTheme) => {
+    const tripList: Trip[] = useLocal ? (loadDemoData().trips ?? []) : trips
+    if (tripList.length === 0) return
+
+    setThemeApplying(true)
+    try {
+      const imageUpdates = await Promise.all(
+        tripList.map(async (trip) => ({
+          id: trip.id,
+          image_url: await fetchLocationImage(trip.destination_name, theme, trip.country_code ?? undefined),
+        })),
+      )
+
+      if (useLocal) {
+        const demo = loadDemoData()
+        demo.trips = (demo.trips ?? []).map((t: Trip) => {
+          const update = imageUpdates.find((u) => u.id === t.id)
+          return update
+            ? { ...t, image_url: update.image_url, updated_at: new Date().toISOString() }
+            : t
+        })
+        saveDemoData(demo)
+        setTrips(demo.trips)
+        return
+      }
+
+      const db = requireSupabase()
+      await Promise.all(
+        imageUpdates.map((u) => db.from('trips').update({ image_url: u.image_url }).eq('id', u.id)),
+      )
+      setTrips((prev) =>
+        prev.map((t) => {
+          const update = imageUpdates.find((u) => u.id === t.id)
+          return update ? { ...t, image_url: update.image_url } : t
+        }),
+      )
+    } finally {
+      setThemeApplying(false)
+    }
+  }
+
   const setBannerTheme = async (theme: BannerTheme) => {
     setBannerThemeState(theme)
     if (!user) return
@@ -372,12 +428,32 @@ export function TripProvider({ children }: { children: ReactNode }) {
       const demo = loadDemoData()
       demo.bannerTheme = theme
       saveDemoData(demo)
+    } else {
+      const db = requireSupabase()
+      await db.from('user_settings').upsert(
+        { user_id: user.id, banner_theme: theme, color_mode: colorMode },
+        { onConflict: 'user_id' },
+      )
+    }
+
+    await applyBannerThemeToAllTrips(theme)
+  }
+
+  const setColorMode = async (mode: ColorMode) => {
+    setColorModeState(mode)
+    applyColorMode(mode)
+    if (!user) return
+
+    if (useLocal) {
+      const demo = loadDemoData()
+      demo.colorMode = mode
+      saveDemoData(demo)
       return
     }
 
     const db = requireSupabase()
     await db.from('user_settings').upsert(
-      { user_id: user.id, banner_theme: theme },
+      { user_id: user.id, banner_theme: bannerTheme, color_mode: mode },
       { onConflict: 'user_id' },
     )
   }
@@ -391,6 +467,8 @@ export function TripProvider({ children }: { children: ReactNode }) {
         itinerary,
         closet,
         bannerTheme,
+        colorMode,
+        themeApplying,
         loading,
         setActiveTripId,
         refreshTrips,
@@ -408,6 +486,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
         updateItineraryEntry,
         deleteItineraryEntry,
         setBannerTheme,
+        setColorMode,
       }}
     >
       {children}

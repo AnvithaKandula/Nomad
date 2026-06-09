@@ -18,7 +18,9 @@ export type ActivityCategory =
   | 'nightlife'
   | 'camping'
 
-export type BannerTheme = 'flag' | 'landmark' | 'national_flower'
+export type BannerTheme = 'flag' | 'landmark' | 'national_flower' | 'local_food' | 'cityscape'
+
+export type ColorMode = 'light' | 'dark'
 
 export interface Trip {
   id: string
@@ -67,6 +69,7 @@ export interface UserSettings {
   id: string
   user_id: string
   banner_theme: BannerTheme
+  color_mode: ColorMode
 }
 
 export interface LocationSuggestion {

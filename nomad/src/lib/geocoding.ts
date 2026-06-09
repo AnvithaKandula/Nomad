@@ -1,4 +1,4 @@
-import type { LocationSuggestion } from '../types'
+import type { BannerTheme, LocationSuggestion } from '../types'
 
 export async function searchLocations(query: string): Promise<LocationSuggestion[]> {
   if (!query.trim()) return []
@@ -32,36 +32,6 @@ export async function searchLocations(query: string): Promise<LocationSuggestion
   )
 }
 
-export async function fetchLocationImage(
-  destination: string,
-  theme: 'landmark' | 'flag' | 'national_flower' = 'landmark',
-  countryCode?: string,
-): Promise<string> {
-  if (theme === 'flag' && countryCode) {
-    return `https://flagcdn.com/w640/${countryCode.toLowerCase()}.png`
-  }
-
-  if (theme === 'national_flower' && countryCode) {
-    const flower = NATIONAL_FLOWERS[countryCode] ?? 'national flower'
-    return `https://source.unsplash.com/featured/800x400/?${encodeURIComponent(flower)}`
-  }
-
-  try {
-    const wikiRes = await fetch(
-      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(destination.split(',')[0].trim())}`,
-    )
-    if (wikiRes.ok) {
-      const wiki = await wikiRes.json()
-      if (wiki.thumbnail?.source) return wiki.thumbnail.source
-      if (wiki.originalimage?.source) return wiki.originalimage.source
-    }
-  } catch {
-    // fall through to unsplash
-  }
-
-  return `https://source.unsplash.com/featured/800x400/?${encodeURIComponent(destination)},landmark,travel`
-}
-
 const NATIONAL_FLOWERS: Record<string, string> = {
   US: 'rose',
   GB: 'rose',
@@ -83,4 +53,106 @@ const NATIONAL_FLOWERS: Record<string, string> = {
   NZ: 'kowhai',
   ZA: 'protea',
   IE: 'shamrock',
+}
+
+const FAMOUS_FOODS: Record<string, string> = {
+  US: 'hamburger',
+  GB: 'fish and chips',
+  FR: 'croissant',
+  IT: 'pizza',
+  ES: 'paella',
+  MX: 'tacos',
+  JP: 'sushi',
+  IN: 'biryani',
+  TH: 'pad thai',
+  CN: 'dim sum',
+  KR: 'kimchi',
+  GR: 'gyro',
+  TR: 'kebab',
+  VN: 'pho',
+  BR: 'feijoada',
+  CA: 'poutine',
+  DE: 'pretzel',
+  NL: 'stroopwafel',
+  BE: 'waffles',
+  PT: 'pastel de nata',
+  AR: 'empanadas',
+  AU: 'meat pie',
+  MA: 'tagine',
+  EG: 'koshari',
+  IL: 'falafel',
+  LB: 'hummus',
+  CH: 'fondue',
+  AT: 'schnitzel',
+  PL: 'pierogi',
+  SE: 'meatballs',
+  NO: 'salmon',
+  IE: 'irish stew',
+  NZ: 'pavlova',
+  ZA: 'braai',
+  SG: 'chili crab',
+  MY: 'nasi lemak',
+  ID: 'nasi goreng',
+  PH: 'adobo',
+  CO: 'arepa',
+  PE: 'ceviche',
+  CL: 'empanada',
+  CU: 'cuban sandwich',
+  JM: 'jerk chicken',
+  HK: 'dim sum',
+  TW: 'beef noodle soup',
+}
+
+function cityName(destination: string): string {
+  return destination.split(',')[0].trim()
+}
+
+function unsplashUrl(query: string): string {
+  return `https://source.unsplash.com/featured/800x400/?${encodeURIComponent(query)}`
+}
+
+export async function fetchLocationImage(
+  destination: string,
+  theme: BannerTheme = 'landmark',
+  countryCode?: string,
+): Promise<string> {
+  const city = cityName(destination)
+
+  if (theme === 'flag' && countryCode) {
+    return `https://flagcdn.com/w640/${countryCode.toLowerCase()}.png`
+  }
+
+  if (theme === 'national_flower') {
+    const flower = countryCode ? (NATIONAL_FLOWERS[countryCode] ?? 'national flower') : 'national flower'
+    return unsplashUrl(`${flower},flower`)
+  }
+
+  if (theme === 'local_food') {
+    const food = countryCode
+      ? (FAMOUS_FOODS[countryCode] ?? `${city} famous food`)
+      : `${city} famous food`
+    return unsplashUrl(`${food},food,cuisine`)
+  }
+
+  if (theme === 'cityscape') {
+    return unsplashUrl(`${city},skyline,cityscape`)
+  }
+
+  if (theme === 'landmark') {
+    try {
+      const wikiRes = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(city)}`,
+      )
+      if (wikiRes.ok) {
+        const wiki = await wikiRes.json()
+        if (wiki.thumbnail?.source) return wiki.thumbnail.source
+        if (wiki.originalimage?.source) return wiki.originalimage.source
+      }
+    } catch {
+      // fall through
+    }
+    return unsplashUrl(`${city},landmark,travel`)
+  }
+
+  return unsplashUrl(`${destination},travel`)
 }

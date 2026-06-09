@@ -12,6 +12,7 @@ export function seedGuestData() {
 
   const data = {
     bannerTheme: 'landmark',
+    colorMode: 'light',
     trips: [
       {
         id: tripMontreal,
