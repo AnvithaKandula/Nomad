@@ -6,7 +6,7 @@ import { useTrips } from '../contexts/TripContext'
 import { TripForm } from '../components/trips/TripForm'
 import { PageHeader } from '../components/ui/PageHeader'
 import { PageContainer } from '../components/layout/PageContainer'
-import { fetchLocationImage } from '../lib/geocoding'
+import { TripBanner } from '../components/trips/TripBanner'
 
 function tripStatus(endDate: string) {
   return isPast(parseISO(endDate)) ? 'Completed' : 'Planning'
@@ -78,15 +78,7 @@ export function Trips() {
               >
                 <button onClick={() => openTrip(trip.id)} className="w-full text-left">
                   <div className="relative h-44 md:h-52 lg:h-56">
-                    <img
-                      src={trip.image_url ?? `https://picsum.photos/seed/${encodeURIComponent(trip.destination_name)}/800/400`}
-                      alt={trip.destination_name}
-                      className="h-full w-full object-cover grayscale-[20%]"
-                      onError={async (e) => {
-                        const img = await fetchLocationImage(trip.destination_name, bannerTheme, trip.country_code ?? undefined)
-                        ;(e.target as HTMLImageElement).src = img
-                      }}
-                    />
+                    <TripBanner trip={trip} bannerTheme={bannerTheme} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                     <span
                       className={`absolute right-3 top-3 rounded-full px-3 py-1 text-xs font-medium ${

@@ -11,71 +11,48 @@ export function getWeatherVariant(code: number): WeatherVariant {
   return 'partly-cloudy'
 }
 
-function Sun() {
+function SunRays() {
   return (
-    <g>
-      <circle cx="20" cy="20" r="8" fill="#FBBF24" />
-      <g stroke="#F59E0B" strokeWidth="2" strokeLinecap="round">
-        <line x1="20" y1="6" x2="20" y2="10" />
-        <line x1="20" y1="30" x2="20" y2="34" />
-        <line x1="6" y1="20" x2="10" y2="20" />
-        <line x1="30" y1="20" x2="34" y2="20" />
-        <line x1="10.1" y1="10.1" x2="12.9" y2="12.9" />
-        <line x1="27.1" y1="27.1" x2="29.9" y2="29.9" />
-        <line x1="10.1" y1="29.9" x2="12.9" y2="27.1" />
-        <line x1="27.1" y1="12.9" x2="29.9" y2="10.1" />
-      </g>
+    <g fill="#FBBF24">
+      <circle cx="18" cy="14" r="5" />
+      <rect x="17" y="4" width="2" height="3" rx="1" />
+      <rect x="17" y="21" width="2" height="3" rx="1" />
+      <rect x="8" y="13" width="3" height="2" rx="1" />
+      <rect x="25" y="13" width="3" height="2" rx="1" />
+      <rect x="10.5" y="7" width="2" height="3" rx="1" transform="rotate(-45 11.5 8.5)" />
+      <rect x="23.5" y="7" width="2" height="3" rx="1" transform="rotate(45 24.5 8.5)" />
+      <rect x="10.5" y="18" width="2" height="3" rx="1" transform="rotate(45 11.5 19.5)" />
+      <rect x="23.5" y="18" width="2" height="3" rx="1" transform="rotate(-45 24.5 19.5)" />
     </g>
   )
 }
 
-function Cloud({ x = 14, y = 22 }: { x?: number; y?: number }) {
+function CloudShape({ x = 8 }: { x?: number }) {
   return (
-    <g fill="#CBD5E1" stroke="#94A3B8" strokeWidth="1">
-      <ellipse cx={x + 10} cy={y} rx="11" ry="7" />
-      <ellipse cx={x + 20} cy={y - 2} rx="9" ry="6" />
-      <ellipse cx={x + 3} cy={y - 1} rx="7" ry="5" />
+    <g fill="#E2E8F0" stroke="#CBD5E1" strokeWidth="0.5">
+      <ellipse cx={x + 10} cy="24" rx="10" ry="6" />
+      <ellipse cx={x + 18} cy="22" rx="8" ry="5.5" />
+      <ellipse cx={x + 4} cy="23" rx="6" ry="4.5" />
     </g>
   )
 }
 
-function Rain() {
+function RainDrops() {
   return (
-    <g fill="#0EA5E9">
-      <ellipse cx="18" cy="36" rx="2" ry="3" />
-      <ellipse cx="26" cy="38" rx="2" ry="3" />
-      <ellipse cx="34" cy="36" rx="2" ry="3" />
+    <g fill="#38BDF8">
+      <ellipse cx="12" cy="31" rx="1.5" ry="2.5" />
+      <ellipse cx="18" cy="33" rx="1.5" ry="2.5" />
+      <ellipse cx="24" cy="31" rx="1.5" ry="2.5" />
     </g>
   )
 }
 
-function Snow() {
+function SnowFlakes() {
   return (
-    <g fill="#38BDF8" stroke="#0EA5E9" strokeWidth="0.5">
-      <circle cx="18" cy="36" r="2" />
-      <circle cx="26" cy="38" r="2" />
-      <circle cx="34" cy="36" r="2" />
-    </g>
-  )
-}
-
-function Lightning() {
-  return (
-    <path
-      d="M26 32 L22 40 L26 40 L24 46"
-      fill="#FBBF24"
-      stroke="#F59E0B"
-      strokeWidth="0.5"
-      strokeLinejoin="round"
-    />
-  )
-}
-
-function FogLines() {
-  return (
-    <g stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" opacity="0.8">
-      <line x1="10" y1="38" x2="38" y2="38" />
-      <line x1="14" y1="42" x2="34" y2="42" />
+    <g fill="#7DD3FC" stroke="#38BDF8" strokeWidth="0.4">
+      <circle cx="12" cy="31" r="1.2" />
+      <circle cx="18" cy="33" r="1.2" />
+      <circle cx="24" cy="31" r="1.2" />
     </g>
   )
 }
@@ -87,51 +64,51 @@ export function WeatherIllustration({ code, size = 40 }: { code: number; size?: 
     <svg
       width={size}
       height={size}
-      viewBox="0 0 48 48"
+      viewBox="0 0 36 36"
+      fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
-      role="img"
       className="shrink-0"
     >
-      <rect width="48" height="48" fill="transparent" />
-
-      {variant === 'clear' && <Sun />}
+      {variant === 'clear' && <SunRays />}
 
       {variant === 'partly-cloudy' && (
         <>
-          <Sun />
-          <Cloud x={16} y={24} />
+          <SunRays />
+          <CloudShape x={10} />
         </>
       )}
 
-      {variant === 'cloudy' && <Cloud x={10} y={20} />}
+      {variant === 'cloudy' && <CloudShape x={6} />}
 
       {variant === 'fog' && (
         <>
-          <Cloud x={10} y={18} />
-          <FogLines />
+          <CloudShape x={6} />
+          <g stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" opacity="0.7">
+            <line x1="6" y1="30" x2="30" y2="30" />
+            <line x1="8" y1="33" x2="28" y2="33" />
+          </g>
         </>
       )}
 
       {variant === 'rain' && (
         <>
-          <Cloud x={10} y={18} />
-          <Rain />
+          <CloudShape x={6} />
+          <RainDrops />
         </>
       )}
 
       {variant === 'snow' && (
         <>
-          <Cloud x={10} y={18} />
-          <Snow />
+          <CloudShape x={6} />
+          <SnowFlakes />
         </>
       )}
 
       {variant === 'thunder' && (
         <>
-          <Cloud x={10} y={18} />
-          <Rain />
-          <Lightning />
+          <CloudShape x={6} />
+          <path d="M17 28 L15 33 L18 33 L16 36" fill="#FBBF24" stroke="#F59E0B" strokeWidth="0.3" />
         </>
       )}
     </svg>

@@ -109,7 +109,7 @@ export function WeatherCard({ trip }: WeatherCardProps) {
                 .toLocaleDateString('en', { weekday: 'short' })
                 .toUpperCase()}
             </p>
-            <WeatherIllustration code={day.weatherCode} size={40} />
+            <WeatherIllustration code={day.weatherCode} size={36} />
             <p className="mt-2 text-lg font-bold text-slate-900 dark:text-white sm:text-xl">
               {toDisplayTemp(day.tempMax, unit)}°
             </p>
