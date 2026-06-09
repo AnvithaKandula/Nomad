@@ -29,22 +29,12 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-dvh bg-[#f4f4f5] safe-top safe-bottom lg:grid lg:grid-cols-2">
-      <div className="hidden items-center justify-center border-r border-gray-200 bg-white px-12 lg:flex xl:px-20">
-        <div className="max-w-md">
-          <Logo size="lg" />
-          <p className="mt-8 text-base leading-relaxed text-gray-500">
-            Plan trips, pack smarter, and stay ready for wherever you go.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-col items-center justify-center px-6 py-10 md:px-12 lg:px-16 xl:px-24">
-      <div className="mb-8 lg:hidden">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-[#f4f4f5] px-6 safe-top safe-bottom">
+      <div className="mb-10 w-full max-w-md">
         <Logo size="lg" />
       </div>
 
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 md:max-w-md">
+      <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
         {error && <p className="text-center text-sm text-red-600">{error}</p>}
         <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <Input label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
@@ -53,11 +43,11 @@ export function Login() {
         </Button>
       </form>
 
-      <Button variant="outline" onClick={handleGuest} className="mt-4 w-full max-w-sm md:max-w-md">
+      <Button variant="outline" onClick={handleGuest} className="mt-4 w-full max-w-md">
         Continue as Guest
       </Button>
 
-      <div className="mt-6 space-y-2 text-center text-sm">
+      <div className="mt-6 w-full max-w-md space-y-2 text-center text-sm">
         <Link to="/forgot-password" className="text-gray-600 hover:text-black hover:underline">
           Forgot password?
         </Link>
@@ -67,7 +57,6 @@ export function Login() {
             Register
           </Link>
         </p>
-      </div>
       </div>
     </div>
   )

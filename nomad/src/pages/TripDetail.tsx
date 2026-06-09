@@ -33,7 +33,7 @@ export function TripDetail() {
   const days = differenceInDays(parseISO(trip.end_date), parseISO(trip.start_date)) + 1
 
   return (
-    <PageContainer wide>
+    <PageContainer>
       <div className="mb-4 flex items-center justify-between md:mb-6">
         <button
           onClick={() => navigate('/trips')}
